@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../../ui/components/steady_icon.dart';
 import '../../ui/components/steady_tab_bar.dart';
 import '../check_in/check_in_screen.dart';
+import '../money/money_screen.dart';
 import '../placeholder/placeholder_screen.dart';
 import '../streaks/streaks_screen.dart';
 import '../timer/timer_screen.dart';
@@ -60,7 +61,7 @@ class _HomeShellState extends State<HomeShell> {
                 PlaceholderScreen(title: l10n.tabFocus),
                 TimerScreen(isActive: _index == 1),
                 const StreaksScreen(),
-                PlaceholderScreen(title: l10n.tabMoney),
+                MoneyScreen(isActive: _index == 3),
                 const CheckInScreen(),
               ],
             ),

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -285,6 +286,205 @@ void main() {
           reason: 'missing assets/icons/${entry.value}.svg',
         );
       }
+    });
+  });
+
+  group('money copy (section 8 of the plan)', () {
+    final en = AppLocalizationsEn();
+
+    test('the tab, the header and the big number', () {
+      expect(en.tabMoney, 'Money');
+      expect(en.moneyOffline, 'Offline · no bank link');
+      expect(en.spentThisMonth, 'Spent this month');
+      expect(en.spentLastMonth(r'$50.00'), r'Last month: $50.00');
+    });
+
+    test('the add and edit screens', () {
+      expect(en.addExpense, 'Add expense');
+      expect(en.editExpense, 'Edit expense');
+      expect(en.saveExpense, 'Save expense');
+      expect(en.categoryLabel, 'Category');
+      expect(en.chooseCategory, 'Choose a category');
+      expect(en.categoryMore, 'More');
+      expect(en.noteButton, 'Note');
+      expect(en.noteHint, 'What was it for?');
+      expect(en.done, 'Done');
+      expect(en.keypadLabel, 'Amount keypad');
+      expect(en.keypadBackspace, 'Delete last digit');
+      expect(en.close, 'Close');
+    });
+
+    test('the lists', () {
+      expect(en.byCategoryHeader, 'BY CATEGORY');
+      expect(en.recentHeader, 'RECENT');
+      expect(en.seeAll, 'See all');
+      expect(en.moneyEmpty, 'Your expenses will show up here.');
+      expect(en.moneyLoadError, "Couldn't load your expenses.");
+      expect(en.expensesTitle, 'Expenses');
+      expect([en.dayToday, en.dayYesterday], ['TODAY', 'YESTERDAY']);
+      expect([en.dateToday, en.dateYesterday], ['Today', 'Yesterday']);
+      expect(en.entryDetailLine('Groceries', '9:00 PM'), 'Groceries · 9:00 PM');
+    });
+
+    test('the 12 categories', () {
+      expect(
+        [
+          en.catGroceries,
+          en.catEatingOut,
+          en.catTransport,
+          en.catBills,
+          en.catShopping,
+          en.catHealth,
+          en.catGifts,
+          en.catHousing,
+          en.catTravel,
+          en.catPhone,
+          en.catEducation,
+          en.catOther,
+        ],
+        [
+          'Groceries',
+          'Eating out',
+          'Transport',
+          'Bills',
+          'Shopping',
+          'Health',
+          'Gifts',
+          'Housing',
+          'Travel',
+          'Phone',
+          'Education',
+          'Other',
+        ],
+      );
+    });
+
+    test('an expense amount starts with a real minus sign (U+2212)', () {
+      expect(en.amountExpense(r'$12.40'), '\u2212\$12.40');
+      expect(en.amountExpense(r'$12.40').codeUnitAt(0), 0x2212);
+      expect(en.amountExpense(r'$12.40'), isNot(startsWith('-')));
+    });
+
+    test('deleting an expense', () {
+      expect(en.deleteExpense, 'Delete expense');
+      expect(en.deleteExpenseTitle, 'Delete this expense?');
+      expect(
+        en.deleteExpenseBody,
+        "This removes it from your history. It can't be undone.",
+      );
+      expect(en.delete, 'Delete');
+      expect(en.cancel, 'Cancel');
+      expect(en.saveError, "Couldn't save. Try again.");
+    });
+
+    // Money chỉ ghi khoản chi: các phần thu nhập, tích trữ, hạn mức, chuyển tiền
+    // đã bị bỏ khỏi thiết kế nên không được lọt vào câu chữ.
+    test('there is no income, saving, budget or transfer wording', () {
+      final arb = jsonDecode(
+        File('lib/l10n/app_en.arb').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      const moneyKeys = [
+        'moneyOffline',
+        'spentThisMonth',
+        'spentLastMonth',
+        'addExpense',
+        'editExpense',
+        'byCategoryHeader',
+        'recentHeader',
+        'seeAll',
+        'moneyEmpty',
+        'moneyLoadError',
+        'expensesTitle',
+        'dayToday',
+        'dayYesterday',
+        'categoryLabel',
+        'chooseCategory',
+        'categoryMore',
+        'catGroceries',
+        'catEatingOut',
+        'catTransport',
+        'catBills',
+        'catShopping',
+        'catHealth',
+        'catGifts',
+        'catHousing',
+        'catTravel',
+        'catPhone',
+        'catEducation',
+        'catOther',
+        'dateToday',
+        'dateYesterday',
+        'noteButton',
+        'noteHint',
+        'done',
+        'keypadLabel',
+        'keypadBackspace',
+        'saveExpense',
+        'entryDetailLine',
+        'amountExpense',
+        'deleteExpense',
+        'deleteExpenseTitle',
+        'deleteExpenseBody',
+      ];
+      for (final key in moneyKeys) {
+        expect(arb[key], isA<String>(), reason: 'ARB has no text for "$key"');
+      }
+      for (final key in moneyKeys) {
+        final text = (arb[key] as String).toLowerCase();
+        for (final banned in [
+          'income',
+          'salary',
+          'savings',
+          'envelope',
+          'budget',
+          'left to spend',
+          'transfer',
+          'take-home',
+        ]) {
+          expect(
+            text,
+            isNot(contains(banned)),
+            reason: '$key mentions $banned',
+          );
+        }
+      }
+    });
+  });
+
+  group('money icons', () {
+    test('the 15 icons added for the Money tab exist under their names', () {
+      const names = {
+        SteadyIcons.lock: 'lock',
+        SteadyIcons.calendar: 'calendar',
+        SteadyIcons.delete: 'delete',
+        SteadyIcons.receipt: 'receipt',
+        SteadyIcons.shoppingCart: 'shopping-cart',
+        SteadyIcons.coffee: 'coffee',
+        SteadyIcons.car: 'car',
+        SteadyIcons.zap: 'zap',
+        SteadyIcons.shirt: 'shirt',
+        SteadyIcons.heartPulse: 'heart-pulse',
+        SteadyIcons.gift: 'gift',
+        SteadyIcons.house: 'house',
+        SteadyIcons.plane: 'plane',
+        SteadyIcons.smartphone: 'smartphone',
+        SteadyIcons.graduationCap: 'graduation-cap',
+      };
+      expect(names, hasLength(15));
+      for (final entry in names.entries) {
+        expect(entry.key, entry.value);
+        final file = File('assets/icons/${entry.value}.svg');
+        expect(file.existsSync(), isTrue, reason: 'missing ${file.path}');
+        expect(file.readAsStringSync(), contains('<svg'));
+      }
+    });
+
+    test('the Money tab added no icon file: still exactly 67', () {
+      final svgs = Directory('assets/icons')
+          .listSync()
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.svg'));
+      expect(svgs, hasLength(67));
     });
   });
 

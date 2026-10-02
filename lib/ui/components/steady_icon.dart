@@ -22,6 +22,21 @@ abstract final class SteadyIcons {
   static const layers = 'layers';
   static const armchair = 'armchair';
   static const minus = 'minus';
+  static const lock = 'lock';
+  static const calendar = 'calendar';
+  static const delete = 'delete';
+  static const receipt = 'receipt';
+  static const shoppingCart = 'shopping-cart';
+  static const coffee = 'coffee';
+  static const car = 'car';
+  static const zap = 'zap';
+  static const shirt = 'shirt';
+  static const heartPulse = 'heart-pulse';
+  static const gift = 'gift';
+  static const house = 'house';
+  static const plane = 'plane';
+  static const smartphone = 'smartphone';
+  static const graduationCap = 'graduation-cap';
 }
 
 class SteadyIcon extends StatelessWidget {

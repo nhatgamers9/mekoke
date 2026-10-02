@@ -8,6 +8,8 @@ class PrefsRepository {
 
   static const _presetKey = 'interval.preset';
   static const _customKey = 'interval.custom';
+  static const _currencyKey = 'money.currency';
+  static final _currencyPattern = RegExp(r'^[A-Z]{3}$');
 
   final AppDatabase _db;
 
@@ -57,5 +59,24 @@ class PrefsRepository {
   Future<void> saveIntervalSetup(IntervalSetup s) async {
     await write(_presetKey, s.preset.name);
     await write(_customKey, s.custom.toJson());
+  }
+
+  /// Có giá trị hợp lệ (mã ba chữ in hoa) thì trả về giá trị đó. Không có hoặc
+  /// không hợp lệ thì ghi [fallback] (lỗi ghi thì bỏ qua) rồi trả [fallback].
+  /// Lỗi đọc thì trả [fallback] và không ghi. Không bao giờ ném lỗi.
+  Future<String> loadCurrency({required String fallback}) async {
+    final String? saved;
+    try {
+      saved = await read(_currencyKey);
+    } catch (_) {
+      return fallback;
+    }
+    if (saved != null && _currencyPattern.hasMatch(saved)) return saved;
+    try {
+      await write(_currencyKey, fallback);
+    } catch (_) {
+      // Chưa lưu được thì lần mở sau tính lại theo vùng của máy.
+    }
+    return fallback;
   }
 }

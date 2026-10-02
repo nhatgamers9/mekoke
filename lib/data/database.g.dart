@@ -1212,6 +1212,415 @@ class PrefsCompanion extends UpdateCompanion<PrefEntry> {
   }
 }
 
+class $MoneyEntriesTable extends MoneyEntries
+    with TableInfo<$MoneyEntriesTable, MoneyEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MoneyEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _amountMinorMeta = const VerificationMeta(
+    'amountMinor',
+  );
+  @override
+  late final GeneratedColumn<int> amountMinor = GeneratedColumn<int>(
+    'amount_minor',
+    aliasedName,
+    false,
+    check: () =>
+        ComparableExpr(amountMinor).isBetweenValues(1, kMaxAmountMinor),
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<MoneyCategory, String> category =
+      GeneratedColumn<String>(
+        'category',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<MoneyCategory>($MoneyEntriesTable.$convertercategory);
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<LocalDate, String> date =
+      GeneratedColumn<String>(
+        'date',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<LocalDate>($MoneyEntriesTable.$converterdate);
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    amountMinor,
+    category,
+    note,
+    date,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'money_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MoneyEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('amount_minor')) {
+      context.handle(
+        _amountMinorMeta,
+        amountMinor.isAcceptableOrUnknown(
+          data['amount_minor']!,
+          _amountMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMinorMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MoneyEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MoneyEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      amountMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_minor'],
+      )!,
+      category: $MoneyEntriesTable.$convertercategory.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}category'],
+        )!,
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      date: $MoneyEntriesTable.$converterdate.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}date'],
+        )!,
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MoneyEntriesTable createAlias(String alias) {
+    return $MoneyEntriesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<MoneyCategory, String, String> $convertercategory =
+      const EnumNameConverter<MoneyCategory>(MoneyCategory.values);
+  static TypeConverter<LocalDate, String> $converterdate =
+      const LocalDateConverter();
+}
+
+class MoneyEntry extends DataClass implements Insertable<MoneyEntry> {
+  final int id;
+  final int amountMinor;
+  final MoneyCategory category;
+  final String? note;
+  final LocalDate date;
+  final DateTime createdAt;
+  const MoneyEntry({
+    required this.id,
+    required this.amountMinor,
+    required this.category,
+    this.note,
+    required this.date,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['amount_minor'] = Variable<int>(amountMinor);
+    {
+      map['category'] = Variable<String>(
+        $MoneyEntriesTable.$convertercategory.toSql(category),
+      );
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    {
+      map['date'] = Variable<String>(
+        $MoneyEntriesTable.$converterdate.toSql(date),
+      );
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  MoneyEntriesCompanion toCompanion(bool nullToAbsent) {
+    return MoneyEntriesCompanion(
+      id: Value(id),
+      amountMinor: Value(amountMinor),
+      category: Value(category),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      date: Value(date),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory MoneyEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MoneyEntry(
+      id: serializer.fromJson<int>(json['id']),
+      amountMinor: serializer.fromJson<int>(json['amountMinor']),
+      category: $MoneyEntriesTable.$convertercategory.fromJson(
+        serializer.fromJson<String>(json['category']),
+      ),
+      note: serializer.fromJson<String?>(json['note']),
+      date: serializer.fromJson<LocalDate>(json['date']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'amountMinor': serializer.toJson<int>(amountMinor),
+      'category': serializer.toJson<String>(
+        $MoneyEntriesTable.$convertercategory.toJson(category),
+      ),
+      'note': serializer.toJson<String?>(note),
+      'date': serializer.toJson<LocalDate>(date),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  MoneyEntry copyWith({
+    int? id,
+    int? amountMinor,
+    MoneyCategory? category,
+    Value<String?> note = const Value.absent(),
+    LocalDate? date,
+    DateTime? createdAt,
+  }) => MoneyEntry(
+    id: id ?? this.id,
+    amountMinor: amountMinor ?? this.amountMinor,
+    category: category ?? this.category,
+    note: note.present ? note.value : this.note,
+    date: date ?? this.date,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  MoneyEntry copyWithCompanion(MoneyEntriesCompanion data) {
+    return MoneyEntry(
+      id: data.id.present ? data.id.value : this.id,
+      amountMinor: data.amountMinor.present
+          ? data.amountMinor.value
+          : this.amountMinor,
+      category: data.category.present ? data.category.value : this.category,
+      note: data.note.present ? data.note.value : this.note,
+      date: data.date.present ? data.date.value : this.date,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MoneyEntry(')
+          ..write('id: $id, ')
+          ..write('amountMinor: $amountMinor, ')
+          ..write('category: $category, ')
+          ..write('note: $note, ')
+          ..write('date: $date, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, amountMinor, category, note, date, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MoneyEntry &&
+          other.id == this.id &&
+          other.amountMinor == this.amountMinor &&
+          other.category == this.category &&
+          other.note == this.note &&
+          other.date == this.date &&
+          other.createdAt == this.createdAt);
+}
+
+class MoneyEntriesCompanion extends UpdateCompanion<MoneyEntry> {
+  final Value<int> id;
+  final Value<int> amountMinor;
+  final Value<MoneyCategory> category;
+  final Value<String?> note;
+  final Value<LocalDate> date;
+  final Value<DateTime> createdAt;
+  const MoneyEntriesCompanion({
+    this.id = const Value.absent(),
+    this.amountMinor = const Value.absent(),
+    this.category = const Value.absent(),
+    this.note = const Value.absent(),
+    this.date = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  MoneyEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int amountMinor,
+    required MoneyCategory category,
+    this.note = const Value.absent(),
+    required LocalDate date,
+    required DateTime createdAt,
+  }) : amountMinor = Value(amountMinor),
+       category = Value(category),
+       date = Value(date),
+       createdAt = Value(createdAt);
+  static Insertable<MoneyEntry> custom({
+    Expression<int>? id,
+    Expression<int>? amountMinor,
+    Expression<String>? category,
+    Expression<String>? note,
+    Expression<String>? date,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (amountMinor != null) 'amount_minor': amountMinor,
+      if (category != null) 'category': category,
+      if (note != null) 'note': note,
+      if (date != null) 'date': date,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  MoneyEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? amountMinor,
+    Value<MoneyCategory>? category,
+    Value<String?>? note,
+    Value<LocalDate>? date,
+    Value<DateTime>? createdAt,
+  }) {
+    return MoneyEntriesCompanion(
+      id: id ?? this.id,
+      amountMinor: amountMinor ?? this.amountMinor,
+      category: category ?? this.category,
+      note: note ?? this.note,
+      date: date ?? this.date,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (amountMinor.present) {
+      map['amount_minor'] = Variable<int>(amountMinor.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(
+        $MoneyEntriesTable.$convertercategory.toSql(category.value),
+      );
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<String>(
+        $MoneyEntriesTable.$converterdate.toSql(date.value),
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MoneyEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('amountMinor: $amountMinor, ')
+          ..write('category: $category, ')
+          ..write('note: $note, ')
+          ..write('date: $date, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1219,6 +1628,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CheckInsTable checkIns = $CheckInsTable(this);
   late final $FastsTable fasts = $FastsTable(this);
   late final $PrefsTable prefs = $PrefsTable(this);
+  late final $MoneyEntriesTable moneyEntries = $MoneyEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1228,6 +1638,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     checkIns,
     fasts,
     prefs,
+    moneyEntries,
   ];
 }
 
@@ -1937,6 +2348,232 @@ typedef $$PrefsTableProcessedTableManager =
       PrefEntry,
       PrefetchHooks Function()
     >;
+typedef $$MoneyEntriesTableCreateCompanionBuilder =
+    MoneyEntriesCompanion Function({
+      Value<int> id,
+      required int amountMinor,
+      required MoneyCategory category,
+      Value<String?> note,
+      required LocalDate date,
+      required DateTime createdAt,
+    });
+typedef $$MoneyEntriesTableUpdateCompanionBuilder =
+    MoneyEntriesCompanion Function({
+      Value<int> id,
+      Value<int> amountMinor,
+      Value<MoneyCategory> category,
+      Value<String?> note,
+      Value<LocalDate> date,
+      Value<DateTime> createdAt,
+    });
+
+class $$MoneyEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $MoneyEntriesTable> {
+  $$MoneyEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountMinor => $composableBuilder(
+    column: $table.amountMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<MoneyCategory, MoneyCategory, String>
+  get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<LocalDate, LocalDate, String> get date =>
+      $composableBuilder(
+        column: $table.date,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MoneyEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $MoneyEntriesTable> {
+  $$MoneyEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountMinor => $composableBuilder(
+    column: $table.amountMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MoneyEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MoneyEntriesTable> {
+  $$MoneyEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get amountMinor => $composableBuilder(
+    column: $table.amountMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<MoneyCategory, String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<LocalDate, String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$MoneyEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MoneyEntriesTable,
+          MoneyEntry,
+          $$MoneyEntriesTableFilterComposer,
+          $$MoneyEntriesTableOrderingComposer,
+          $$MoneyEntriesTableAnnotationComposer,
+          $$MoneyEntriesTableCreateCompanionBuilder,
+          $$MoneyEntriesTableUpdateCompanionBuilder,
+          (
+            MoneyEntry,
+            BaseReferences<_$AppDatabase, $MoneyEntriesTable, MoneyEntry>,
+          ),
+          MoneyEntry,
+          PrefetchHooks Function()
+        > {
+  $$MoneyEntriesTableTableManager(_$AppDatabase db, $MoneyEntriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MoneyEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MoneyEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MoneyEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> amountMinor = const Value.absent(),
+                Value<MoneyCategory> category = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<LocalDate> date = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => MoneyEntriesCompanion(
+                id: id,
+                amountMinor: amountMinor,
+                category: category,
+                note: note,
+                date: date,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int amountMinor,
+                required MoneyCategory category,
+                Value<String?> note = const Value.absent(),
+                required LocalDate date,
+                required DateTime createdAt,
+              }) => MoneyEntriesCompanion.insert(
+                id: id,
+                amountMinor: amountMinor,
+                category: category,
+                note: note,
+                date: date,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MoneyEntriesTable, MoneyEntry>(table),
+                  BaseReferences<_$AppDatabase, $MoneyEntriesTable, MoneyEntry>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MoneyEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MoneyEntriesTable,
+      MoneyEntry,
+      $$MoneyEntriesTableFilterComposer,
+      $$MoneyEntriesTableOrderingComposer,
+      $$MoneyEntriesTableAnnotationComposer,
+      $$MoneyEntriesTableCreateCompanionBuilder,
+      $$MoneyEntriesTableUpdateCompanionBuilder,
+      (
+        MoneyEntry,
+        BaseReferences<_$AppDatabase, $MoneyEntriesTable, MoneyEntry>,
+      ),
+      MoneyEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1949,4 +2586,6 @@ class $AppDatabaseManager {
       $$FastsTableTableManager(_db, _db.fasts);
   $$PrefsTableTableManager get prefs =>
       $$PrefsTableTableManager(_db, _db.prefs);
+  $$MoneyEntriesTableTableManager get moneyEntries =>
+      $$MoneyEntriesTableTableManager(_db, _db.moneyEntries);
 }

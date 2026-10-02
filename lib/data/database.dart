@@ -3,6 +3,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 import '../core/time/local_date.dart';
 import '../features/timer/fasting_plan.dart';
+import 'money_types.dart';
 
 part 'database.g.dart';
 
@@ -69,7 +70,28 @@ class Prefs extends Table {
   Set<Column<Object>> get primaryKey => {name};
 }
 
-@DriftDatabase(tables: [Habits, CheckIns, Fasts, Prefs])
+// Chỉ ghi khoản chi, nên không có cột loại (thu/chi). Danh mục lưu bằng `name`
+// của enum: không đổi tên giá trị enum về sau.
+@DataClassName('MoneyEntry')
+class MoneyEntries extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  // Số nguyên dương theo đơn vị nhỏ nhất của tiền tệ (cent, yên...).
+  // Cùng mẫu với CheckIns.mood: lint không hiểu cột tự tham chiếu trong check().
+  IntColumn get amountMinor =>
+      // ignore: recursive_getters
+      integer().check(amountMinor.isBetweenValues(1, kMaxAmountMinor))();
+
+  TextColumn get category => textEnum<MoneyCategory>()();
+
+  TextColumn get note => text().nullable()();
+
+  TextColumn get date => text().map(const LocalDateConverter())();
+
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DriftDatabase(tables: [Habits, CheckIns, Fasts, Prefs, MoneyEntries])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -77,7 +99,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(driftDatabase(name: 'steady'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -86,6 +108,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.createTable(fasts);
         await m.createTable(prefs);
+      }
+      if (from < 3) {
+        await m.createTable(moneyEntries);
       }
     },
   );

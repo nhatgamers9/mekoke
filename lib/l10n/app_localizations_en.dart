@@ -407,4 +407,134 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get moneyOffline => 'Offline · no bank link';
+
+  @override
+  String get spentThisMonth => 'Spent this month';
+
+  @override
+  String spentLastMonth(String amount) {
+    return 'Last month: $amount';
+  }
+
+  @override
+  String get addExpense => 'Add expense';
+
+  @override
+  String get editExpense => 'Edit expense';
+
+  @override
+  String get byCategoryHeader => 'BY CATEGORY';
+
+  @override
+  String get recentHeader => 'RECENT';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get moneyEmpty => 'Your expenses will show up here.';
+
+  @override
+  String get moneyLoadError => 'Couldn\'t load your expenses.';
+
+  @override
+  String get expensesTitle => 'Expenses';
+
+  @override
+  String get dayToday => 'TODAY';
+
+  @override
+  String get dayYesterday => 'YESTERDAY';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get chooseCategory => 'Choose a category';
+
+  @override
+  String get categoryMore => 'More';
+
+  @override
+  String get catGroceries => 'Groceries';
+
+  @override
+  String get catEatingOut => 'Eating out';
+
+  @override
+  String get catTransport => 'Transport';
+
+  @override
+  String get catBills => 'Bills';
+
+  @override
+  String get catShopping => 'Shopping';
+
+  @override
+  String get catHealth => 'Health';
+
+  @override
+  String get catGifts => 'Gifts';
+
+  @override
+  String get catHousing => 'Housing';
+
+  @override
+  String get catTravel => 'Travel';
+
+  @override
+  String get catPhone => 'Phone';
+
+  @override
+  String get catEducation => 'Education';
+
+  @override
+  String get catOther => 'Other';
+
+  @override
+  String get dateToday => 'Today';
+
+  @override
+  String get dateYesterday => 'Yesterday';
+
+  @override
+  String get noteButton => 'Note';
+
+  @override
+  String get noteHint => 'What was it for?';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get keypadLabel => 'Amount keypad';
+
+  @override
+  String get keypadBackspace => 'Delete last digit';
+
+  @override
+  String get saveExpense => 'Save expense';
+
+  @override
+  String entryDetailLine(String category, String time) {
+    return '$category · $time';
+  }
+
+  @override
+  String amountExpense(String amount) {
+    return '−$amount';
+  }
+
+  @override
+  String get deleteExpense => 'Delete expense';
+
+  @override
+  String get deleteExpenseTitle => 'Delete this expense?';
+
+  @override
+  String get deleteExpenseBody =>
+      'This removes it from your history. It can\'t be undone.';
 }

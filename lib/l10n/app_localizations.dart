@@ -711,6 +711,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @moneyOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline · no bank link'**
+  String get moneyOffline;
+
+  /// No description provided for @spentThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent this month'**
+  String get spentThisMonth;
+
+  /// No description provided for @spentLastMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Last month: {amount}'**
+  String spentLastMonth(String amount);
+
+  /// No description provided for @addExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Add expense'**
+  String get addExpense;
+
+  /// No description provided for @editExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit expense'**
+  String get editExpense;
+
+  /// No description provided for @byCategoryHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'BY CATEGORY'**
+  String get byCategoryHeader;
+
+  /// No description provided for @recentHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'RECENT'**
+  String get recentHeader;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @moneyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your expenses will show up here.'**
+  String get moneyEmpty;
+
+  /// No description provided for @moneyLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your expenses.'**
+  String get moneyLoadError;
+
+  /// No description provided for @expensesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get expensesTitle;
+
+  /// No description provided for @dayToday.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get dayToday;
+
+  /// No description provided for @dayYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'YESTERDAY'**
+  String get dayYesterday;
+
+  /// No description provided for @categoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get categoryLabel;
+
+  /// No description provided for @chooseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a category'**
+  String get chooseCategory;
+
+  /// No description provided for @categoryMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get categoryMore;
+
+  /// No description provided for @catGroceries.
+  ///
+  /// In en, this message translates to:
+  /// **'Groceries'**
+  String get catGroceries;
+
+  /// No description provided for @catEatingOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Eating out'**
+  String get catEatingOut;
+
+  /// No description provided for @catTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get catTransport;
+
+  /// No description provided for @catBills.
+  ///
+  /// In en, this message translates to:
+  /// **'Bills'**
+  String get catBills;
+
+  /// No description provided for @catShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get catShopping;
+
+  /// No description provided for @catHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get catHealth;
+
+  /// No description provided for @catGifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Gifts'**
+  String get catGifts;
+
+  /// No description provided for @catHousing.
+  ///
+  /// In en, this message translates to:
+  /// **'Housing'**
+  String get catHousing;
+
+  /// No description provided for @catTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get catTravel;
+
+  /// No description provided for @catPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get catPhone;
+
+  /// No description provided for @catEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get catEducation;
+
+  /// No description provided for @catOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get catOther;
+
+  /// No description provided for @dateToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get dateToday;
+
+  /// No description provided for @dateYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get dateYesterday;
+
+  /// No description provided for @noteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get noteButton;
+
+  /// No description provided for @noteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What was it for?'**
+  String get noteHint;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @keypadLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount keypad'**
+  String get keypadLabel;
+
+  /// No description provided for @keypadBackspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete last digit'**
+  String get keypadBackspace;
+
+  /// No description provided for @saveExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Save expense'**
+  String get saveExpense;
+
+  /// No description provided for @entryDetailLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} · {time}'**
+  String entryDetailLine(String category, String time);
+
+  /// No description provided for @amountExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'−{amount}'**
+  String amountExpense(String amount);
+
+  /// No description provided for @deleteExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete expense'**
+  String get deleteExpense;
+
+  /// No description provided for @deleteExpenseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this expense?'**
+  String get deleteExpenseTitle;
+
+  /// No description provided for @deleteExpenseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes it from your history. It can\'t be undone.'**
+  String get deleteExpenseBody;
 }
 
 class _AppLocalizationsDelegate

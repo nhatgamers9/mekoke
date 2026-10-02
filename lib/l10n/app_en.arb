@@ -323,5 +323,70 @@
   "endWorkoutTitle": "End workout?",
   "endWorkoutBody": "This workout stops here.",
   "keepGoing": "Keep going",
-  "close": "Close"
+  "close": "Close",
+  "moneyOffline": "Offline · no bank link",
+  "spentThisMonth": "Spent this month",
+  "spentLastMonth": "Last month: {amount}",
+  "@spentLastMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpense": "Add expense",
+  "editExpense": "Edit expense",
+  "byCategoryHeader": "BY CATEGORY",
+  "recentHeader": "RECENT",
+  "seeAll": "See all",
+  "moneyEmpty": "Your expenses will show up here.",
+  "moneyLoadError": "Couldn't load your expenses.",
+  "expensesTitle": "Expenses",
+  "dayToday": "TODAY",
+  "dayYesterday": "YESTERDAY",
+  "categoryLabel": "Category",
+  "chooseCategory": "Choose a category",
+  "categoryMore": "More",
+  "catGroceries": "Groceries",
+  "catEatingOut": "Eating out",
+  "catTransport": "Transport",
+  "catBills": "Bills",
+  "catShopping": "Shopping",
+  "catHealth": "Health",
+  "catGifts": "Gifts",
+  "catHousing": "Housing",
+  "catTravel": "Travel",
+  "catPhone": "Phone",
+  "catEducation": "Education",
+  "catOther": "Other",
+  "dateToday": "Today",
+  "dateYesterday": "Yesterday",
+  "noteButton": "Note",
+  "noteHint": "What was it for?",
+  "done": "Done",
+  "keypadLabel": "Amount keypad",
+  "keypadBackspace": "Delete last digit",
+  "saveExpense": "Save expense",
+  "entryDetailLine": "{category} · {time}",
+  "@entryDetailLine": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "amountExpense": "−{amount}",
+  "@amountExpense": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteExpense": "Delete expense",
+  "deleteExpenseTitle": "Delete this expense?",
+  "deleteExpenseBody": "This removes it from your history. It can't be undone."
 }

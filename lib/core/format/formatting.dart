@@ -19,11 +19,17 @@ String formatLocaleOf(BuildContext c) => formatLocaleTag(
 );
 
 // DateFormat phải phân tích mẫu mỗi lần tạo, nên giữ lại theo từng tag.
+final _monthName = <String, DateFormat>{};
 final _monthDay = <String, DateFormat>{};
 final _yearMonthDay = <String, DateFormat>{};
 final _weekdayMonthDay = <String, DateFormat>{};
 final _clock24 = <String, DateFormat>{};
 final _clock12 = <String, DateFormat>{};
+
+/// Tên tháng, ví dụ "October".
+String formatMonth(LocalDate d, String tag) => _monthName
+    .putIfAbsent(tag, () => DateFormat.MMMM(tag))
+    .format(d.toDateTime());
 
 String formatShortDate(LocalDate d, LocalDate today, String tag) {
   final format = d.year == today.year

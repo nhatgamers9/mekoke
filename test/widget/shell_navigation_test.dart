@@ -49,16 +49,39 @@ void main() {
       await disposeSteadyApp(tester, services);
     });
 
-    testWidgets('Focus and Money show the placeholder', (tester) async {
+    testWidgets('Focus shows the placeholder', (tester) async {
       final now = FakeNow(evening());
       final services = await pumpSteadyApp(tester, clock: now.clock);
 
-      for (final (label, index) in [('Money', 3), ('Focus', 0)]) {
-        await tapTab(tester, label);
-        expect(currentTab(tester), index);
-        expect(find.text(label), findsNWidgets(2)); // tab + tiêu đề
-        expect(find.text('This part of Steady isn\'t ready yet.'), findsOne);
-      }
+      await tapTab(tester, 'Focus');
+      expect(currentTab(tester), 0);
+      expect(find.text('Focus'), findsNWidgets(2)); // tab + tiêu đề
+      expect(find.text('This part of Steady isn\'t ready yet.'), findsOne);
+
+      await disposeSteadyApp(tester, services);
+    });
+
+    testWidgets('Money is a real screen', (tester) async {
+      final now = FakeNow(evening());
+      final services = await pumpSteadyApp(tester, clock: now.clock);
+
+      await tapTab(tester, 'Money');
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 80)),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(currentTab(tester), 3);
+      expect(find.text('Money'), findsNWidgets(2)); // tab + tiêu đề
+      expect(find.text('Offline · no bank link'), findsOne);
+      expect(find.text('Add expense'), findsOne);
+      expect(
+        find.text('This part of Steady isn\'t ready yet.'),
+        findsNothing,
+        reason: 'the Money tab is no longer a placeholder',
+      );
+      expect(tester.takeException(), isNull);
 
       await disposeSteadyApp(tester, services);
     });

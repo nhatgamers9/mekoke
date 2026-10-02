@@ -208,4 +208,105 @@ void main() {
       },
     );
   });
+  group('loadCurrency', () {
+    test('nothing saved: writes the fallback and returns it', () async {
+      expect(await prefs.loadCurrency(fallback: 'EUR'), 'EUR');
+      expect(await prefs.read('money.currency'), 'EUR');
+      expect(await rowCount(), 1);
+    });
+
+    test('a saved code is kept even when the fallback is different', () async {
+      await prefs.write('money.currency', 'JPY');
+      expect(await prefs.loadCurrency(fallback: 'USD'), 'JPY');
+      expect(await prefs.read('money.currency'), 'JPY', reason: 'not replaced');
+      expect(await rowCount(), 1);
+    });
+
+    test('once decided, the currency does not follow the fallback', () async {
+      expect(await prefs.loadCurrency(fallback: 'EUR'), 'EUR');
+      expect(await prefs.loadCurrency(fallback: 'USD'), 'EUR');
+      expect(await prefs.loadCurrency(fallback: 'JPY'), 'EUR');
+      expect(await rowCount(), 1);
+    });
+
+    group('a damaged value is replaced by the fallback', () {
+      for (final bad in [
+        '',
+        ' ',
+        'usd',
+        'Usd',
+        'US',
+        'USDD',
+        'U\$D',
+        ' USD',
+        'USD ',
+        'USD\n',
+        '123',
+        'ÉUR',
+        'null',
+      ]) {
+        test('"${bad.replaceAll('\n', r'\n')}"', () async {
+          await prefs.write('money.currency', bad);
+          expect(await prefs.loadCurrency(fallback: 'EUR'), 'EUR');
+          expect(
+            await prefs.read('money.currency'),
+            'EUR',
+            reason: 'overwritten',
+          );
+          expect(await rowCount(), 1);
+        });
+      }
+    });
+
+    test(
+      'three upper-case letters are enough, even for an unusual code',
+      () async {
+        await prefs.write('money.currency', 'XAU');
+        expect(await prefs.loadCurrency(fallback: 'USD'), 'XAU');
+      },
+    );
+
+    test(
+      'a database that cannot be read gives the fallback, no error',
+      () async {
+        final other = AppDatabase(NativeDatabase.memory());
+        final broken = PrefsRepository(other);
+        await other.close();
+
+        expect(await broken.loadCurrency(fallback: 'EUR'), 'EUR');
+      },
+    );
+
+    test(
+      'a write that fails is ignored: the fallback is still returned',
+      () async {
+        await db.customStatement(
+          'CREATE TRIGGER fail_prefs_insert BEFORE INSERT ON prefs '
+          "BEGIN SELECT RAISE(ABORT, 'simulated write failure'); END;",
+        );
+        expect(await prefs.loadCurrency(fallback: 'EUR'), 'EUR');
+        expect(await rowCount(), 0, reason: 'nothing was saved');
+      },
+    );
+
+    test(
+      'a damaged value that cannot be overwritten still gives the fallback',
+      () async {
+        await prefs.write('money.currency', 'bad');
+        await db.customStatement(
+          'CREATE TRIGGER fail_prefs_update BEFORE UPDATE ON prefs '
+          "BEGIN SELECT RAISE(ABORT, 'simulated write failure'); END;",
+        );
+        expect(await prefs.loadCurrency(fallback: 'EUR'), 'EUR');
+        expect(await prefs.read('money.currency'), 'bad');
+      },
+    );
+
+    test('does not touch the interval prefs', () async {
+      await prefs.write('interval.preset', 'hiit3030');
+      await prefs.loadCurrency(fallback: 'USD');
+      expect(await prefs.read('interval.preset'), 'hiit3030');
+      expect(await rowCount(), 2);
+    });
+  });
 }

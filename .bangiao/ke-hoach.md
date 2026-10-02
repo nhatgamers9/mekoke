@@ -1,63 +1,136 @@
-# Kế hoạch: Steady, giai đoạn 1 (nền móng + tab Streaks + tab Check-in)
+# Kế hoạch: GĐ3 phần 1, tab Money (theo dõi chi tiêu)
 
-Yêu cầu gốc: "giờ giúp tôi hoàn thiện phần mềm để nó hoạt động tránh mọi lỗi vặt". Repo hiện chưa có dòng code nào.
-Kế hoạch này đề xuất **chia giai đoạn**. Giai đoạn 1 (GĐ1) phải chạy được và kiểm thử được trọn vẹn trên máy này.
-
----
-
-## CÂU HỎI CÒN BỎ NGỎ
-
-Coder: chừng nào mục này còn trong file thì DỪNG. Người dùng trả lời "đồng ý" nghĩa là nhận mọi đề xuất mặc định bên dưới. Khi đã có câu trả lời, agent điều phối sửa các mục liên quan (nếu người dùng chọn khác mặc định) rồi xoá mục này, sau đó mới giao cho Coder.
-
-| # | Câu hỏi | Đề xuất mặc định |
-|---|---|---|
-| Q1 | "Hoàn thiện phần mềm" là cả app: 5 tab, onboarding, paywall, quảng cáo, đăng nhập, widget. Làm hết trong một lần thì quá lớn, và nhiều phần còn thiếu dữ kiện. Chia giai đoạn có được không? | Có chia. GĐ1 gồm đúng mục 1. Các giai đoạn sau: GĐ2 Timer (nhịn ăn + HIIT, thông báo), GĐ3 Money, GĐ4 Focus (âm thanh), GĐ5 Settings/onboarding/paywall/quảng cáo/widget. Nếu muốn ưu tiên khác (ví dụ Money trước) thì nói. |
-| Q2 | Có cài Flutter SDK vào môi trường này không? GĐ1 chỉ kiểm chứng bằng `flutter analyze` và `flutter test` trên Linux. Máy không có Android SDK nên **không build được APK và không chạy được trên điện thoại**. | Cài Flutter stable vào `/opt/flutter` (nằm ngoài repo). GĐ1 không build APK. Nếu bạn cần APK để cài thử ngay thì phải thêm bước cài Android SDK + JDK, và bước này chưa xác minh là tải được. |
-| Q3 | applicationId trên CH Play. Có thể đổi trước lần tải lên đầu tiên, nhưng sau đó thì **vĩnh viễn không đổi được**. | `com.mekoke.steady` |
-| Q4 | Chọn cơ sở dữ liệu: Isar hay Drift? | Drift (SQLite). Isar bản gốc đã ngừng bảo trì, còn Drift chạy test in-memory được trên Linux. |
-| Q5 | Đếm ngày "sạch" thế nào? A: ngày bắt đầu là 0 days, qua mỗi nửa đêm +1 (khớp số trong mockup: Since May 28 thì ngày Oct 2 là 127). B: ngày bắt đầu đã là 1 day (khớp câu "Day 1 starts now"). | A. Chip trên Check-in hiện "Day {n}" với n là số ngày theo A, nên có thể ra "Day 0". |
-| Q6 | Chuỗi nào là chuỗi chính (thẻ lớn)? Các chuỗi còn lại xếp ra sao? | Chuỗi chính là chuỗi nhiều ngày nhất (ngày bắt đầu sớm nhất); bằng nhau thì chuỗi tạo trước đứng trước. Các chuỗi khác xếp giảm dần theo số ngày. Chip trên Check-in hiện chuỗi chính. |
-| Q7 | Qua mốc 365 ngày thì thanh mốc hiện gì? | Ẩn thanh mốc, vì không còn mốc kế tiếp. |
-| Q8 | Luồng thêm / đặt lại / xoá thói quen chưa có bản vẽ. | Làm như mục 6.3: sheet "Add habit" (tên 1–40 ký tự, ngày "Clean since" mặc định hôm nay, không cho chọn ngày tương lai). Chạm vào thẻ thì mở sheet có "Reset streak" và "Delete habit". Xoá phải qua hộp xác nhận; đặt lại thì không cần xác nhận thêm. Tên trùng nhau vẫn cho phép. |
-| Q9 | Quy tắc Check-in? | Mỗi ngày một bản; lưu lại trong cùng ngày thì ghi đè. Ngày tính từ 00:00 theo giờ máy. Lời chào theo giờ: 05:00–11:59 morning, 12:00–17:59 afternoon, còn lại evening. Ghi chú chỉ một dòng (xuống dòng bị đổi thành dấu cách). GĐ1 chưa có màn lịch sử. |
-| Q10 | Một số câu chữ chưa có trong thiết kế (dòng đánh dấu MỚI ở mục 7). | Dùng đúng như bảng ở mục 7. |
-| Q11 | Màn Settings chưa có. | GĐ1 ẩn nút Settings để không có nút bấm không làm gì. App luôn dùng theme Dark. |
-| Q12 | Có khoá xoay màn hình không? | Khoá dọc (portrait). |
-| Q13 | Android tự sao lưu dữ liệu app lên Google Drive, trái với lời hứa "dữ liệu chỉ ở trên máy". | Tắt (`android:allowBackup="false"`) cho tới khi chốt tính năng sao lưu. Hệ quả: đổi máy là mất dữ liệu. |
-
-Những việc để sau, không chặn GĐ1: backend đăng nhập/sao lưu, file âm mưa CC0, ID AdMob/Play Billing, icon app, bản dịch es/de/fr/ja.
+Yêu cầu gốc (lệnh /ship): "người dùng không dùng phần mềm để tích trữ tiền họ chỉ dùng phần mềm này để xem chi tiêu của bản thân thôi".
+Mọi đường dẫn tính từ `/home/user/mekoke/`. Nhánh `claude/vigilant-archimedes-0yt6az`, mốc `d88adf6`. Không commit, không push, không đổi nhánh.
 
 ---
 
-## 1. Phạm vi GĐ1
+## Câu hỏi đã trả lời
+
+Người dùng trả lời "đồng ý" (2026-10-02), tức là nhận mọi phương án mặc định Q1–Q8 bên dưới. Không còn câu hỏi nào bỏ ngỏ; Coder làm đúng theo kế hoạch như đã viết.
+
+**Q1. Hạn mức chi (ngân sách).**
+- **Mặc định:** lần này không có hạn mức, không có "Left to spend", không có mục BUDGETS. Có làm hạn mức ở phần sau hay không thì hỏi lại khi tới đó.
+- Lựa chọn khác:
+  - (b) Làm ngay lần này một hạn mức tổng mỗi tháng do bạn tự đặt (không dựa trên thu nhập). Khi đó số lớn đổi thành "Left to spend"; vượt hạn mức thì hiện `rose` kèm "Over by …". Phải thêm màn đặt hạn mức, nên lần này phải bớt việc khác.
+  - (c) Phần sau làm hạn mức cho từng danh mục (`BudgetRow`).
+  - (d) Bỏ hẳn hạn mức khỏi lộ trình.
+
+**Q2. Tiền tệ và số tiền.**
+- **Mặc định:**
+  - Lần đầu mở tab Money, app lấy tiền tệ theo vùng của máy (`en_US` ra USD, `de_DE` ra EUR, `ja_JP` ra JPY), rồi lưu cố định vào prefs `money.currency`. Đổi vùng của máy về sau thì tiền tệ không đổi theo. Màn đổi tiền tệ để GĐ5 (Settings).
+  - Cách viết số (dấu nhóm, dấu thập phân) theo locale định dạng của app, cùng quy tắc với ngày tháng.
+  - Phần nguyên nhập tối đa 9 chữ số, tức tối đa 999,999,999.99 với USD.
+- Lựa chọn khác:
+  - (b) Luôn dùng USD.
+  - (c) Hỏi bạn chọn tiền tệ ở lần mở đầu (thêm một màn chọn).
+
+**Q3. Danh mục chi.** Danh sách cố định trong code; chưa cho thêm danh mục riêng.
+- **Mặc định, 12 mục:**
+  - Hiện sẵn 7 mục giống mockup: Groceries, Eating out, Transport, Bills, Shopping, Health, Gifts.
+  - Ô thứ 8 là "More". Bấm vào thì mở thêm Housing, Travel, Phone, Education, Other.
+  - Không có danh mục thu nữa (Salary, Interest).
+- Lựa chọn khác:
+  - (b) Hiện cả 12 mục cùng lúc. Khi đó lưới thành 3 hàng và màn nhập phải cuộn ngay ở cỡ chữ 1.0.
+  - (c) Đổi danh sách.
+
+**Q4. Các trường của một khoản chi.**
+- **Mặc định:** số tiền, danh mục, ngày, ghi chú.
+  - Ngày mặc định là hôm nay. Chọn được ngày đã qua, không chọn được ngày tương lai.
+  - Ghi chú một dòng, tối đa 60 ký tự.
+- Không có nút cách trả (Card/Cash) như trên mockup.
+- Lựa chọn khác: thêm cách trả Card/Cash. Khi đó màn nhập có thêm một nút, và dòng chi tiết thành "Card · 6:42 PM".
+
+**Q5. Phần "xem chi tiêu" trên tab Money.**
+- **Mặc định:** đặt ngay trên tab Money, không có màn riêng.
+  - Số lớn "Spent this month".
+  - Dòng "Last month: $X" ngay dưới, là tổng chi của cả tháng trước. Tháng trước không có khoản nào thì ẩn dòng này.
+  - Mục BY CATEGORY: biểu đồ thanh ngang một màu `amber` như mockup Report. Mỗi danh mục có chi trong tháng này là một thanh, xếp từ lớn tới nhỏ. Tháng này chưa chi gì thì ẩn cả mục.
+  - Chưa xem lại được từng tháng cũ. Màn Report riêng và xuất CSV để sau.
+- Lựa chọn khác:
+  - (b) Dòng so sánh tính cùng kỳ: chi từ đầu tháng trước tới cùng ngày trong tháng ("By this day last month: $X").
+  - (c) Thêm màn Report riêng, có chip "This month / Last month" để xem cả danh mục của tháng trước.
+  - (d) Lần này chưa làm BY CATEGORY và dòng tháng trước.
+
+**Q6. Sửa và xoá.**
+- **Mặc định:** chạm một dòng thì mở sheet có hai nút "Edit expense" và "Delete expense". Delete hỏi xác nhận, nút màu đỏ vì đây là xoá dữ liệu.
+- Lựa chọn khác:
+  - (b) Chỉ có xoá.
+  - (c) Vuốt để xoá.
+
+**Q7. Chọn danh mục trước khi lưu.**
+- **Mặc định:** không chọn sẵn danh mục nào. Chưa chọn danh mục hoặc số tiền bằng 0 thì nút Save bị tắt, để tránh lưu nhầm danh mục.
+- Lựa chọn khác: chọn sẵn Groceries như mockup.
+
+**Q8. Bảng câu chữ ở §8.**
+- **Mặc định:** dùng bảng ở §8. Các dòng ghi MỚI là câu chưa có trong thiết kế.
+  - Màn danh sách đổi tên từ "Transactions" thành "Expenses".
+  - Số tiền ở từng dòng và tổng mỗi ngày giữ dấu "−" như thiết kế `TransactionRow`. Tổng tháng này, tháng trước và số ở BY CATEGORY không có dấu.
+- Lựa chọn khác: bỏ dấu "−" ở mọi nơi, vì app chỉ có khoản chi.
+
+---
+
+## 0. Quyết định đã chốt (không hỏi lại)
+
+- Lần này làm Money (GĐ3 phần 1). Thông báo (GĐ2 phần 2) chưa làm.
+- **Money là trình theo dõi chi tiêu. Chỉ ghi khoản chi.** Các phần sau bị bỏ khỏi thiết kế, không phải hoãn:
+  - Khoản thu: nút Income, segmented Expense/Income, danh mục thu, dòng "Income this month", bộ lọc Expenses/Income, ô Income trên Report, màu `tide` cho số tiền thu.
+  - Tích trữ: ô "Saved", Savings 20%, Envelopes ("Every dollar has a job"), 50/30/20, BudgetSetup ("Monthly take-home pay"). Tất cả đều tính từ thu nhập.
+  - Chuyển tiền: dòng "To savings", bộ lọc Transfers.
+  - "Left to spend" tính từ thu nhập.
+- Dùng Drift. Chỉ theme Dark. 5 tab theo thứ tự cố định Focus, Timer, Streaks, Money, Check-in.
+- **Không làm icon `settings`** trên mockup Money. Bỏ qua TabBar trong mockup.
+- `rose` chỉ dùng cho xoá dữ liệu. Tiền luôn dùng phông sans, không dùng serif.
+- App offline, không liên kết ngân hàng.
+- Số tiền lưu bằng số nguyên dương theo đơn vị nhỏ nhất của tiền tệ (cent với USD, yên với JPY).
+- Bài học từ vòng S3: mọi hàm hành động bất đồng bộ bắt đầu bằng `if (_busy) return;`. `_busy` được bật trước hộp thoại xác nhận.
+- Không đụng 9 điểm "để sau" của lần trước.
+
+---
+
+## 1. Phạm vi lần này
 
 **Làm:**
-- Dựng project Flutter ở gốc repo.
-- Chép design system vào repo.
-- Theme Dark từ tokens, font, icon, l10n (chỉ tiếng Anh).
-- DB Drift, khung 5 tab.
-- **Streaks**: thêm, xem, đặt lại, xoá thói quen; tính mốc.
-- **Check-in**: chọn tâm trạng + ghi chú, lưu theo ngày.
-- Focus, Timer, Money: chỉ có màn chờ (placeholder).
-- Chỉnh Android tối thiểu: tên app, nền khi khởi động, sao lưu.
+- DB schema v3: thêm bảng `money_entries`, có migration từ v1 và v2.
+- Repository Money. Prefs lưu tiền tệ.
+- Logic thuần: nhập số tiền bằng keypad, định dạng tiền, khoảng tháng, tổng, tổng theo danh mục, gom theo ngày.
+- Component mới: `IconTile`, `Keypad`, `TransactionRow`, `BarChartRow`.
+- Tab Money gồm:
+  - tháng hiện tại và chip "Offline · no bank link";
+  - "Spent this month" và dòng "Last month";
+  - nút "Add expense";
+  - mục BY CATEGORY;
+  - 5 khoản gần nhất và nút "See all".
+- Màn nhập/sửa khoản chi (route toàn màn hình), sheet ghi chú, chọn ngày.
+- Màn Expenses: mọi khoản chi, gom theo ngày, mỗi ngày có tổng.
+- Sheet hành động trên một dòng: sửa, xoá.
 
-**Không làm:** âm thanh, hẹn giờ, thông báo, Money, onboarding, paywall, quảng cáo, đăng nhập, widget màn hình chính, Settings, theme Light/Bedtime trên UI (chỉ khai báo hằng màu), lịch sử Check-in, đổi tên thói quen, build APK. Không thêm package nào ngoài mục 4.
+**Không làm:**
+- Hạn mức (Q1), màn Report riêng, xem tháng khác.
+- Ô tìm kiếm, cách trả, khoản định kỳ, xuất/nhập dữ liệu.
+- Đổi tiền tệ, danh mục tự tạo.
+- Icon Settings. Thông báo. Build APK.
+- Không thêm package. Không thêm file SVG: `assets_and_copy_test` khoá đúng 67 icon.
 
 ---
 
-## 2. Môi trường và lệnh
+## 2. Thứ tự làm và lệnh
 
-Đặt `SRC=/tmp/claude-0/-home-user-mekoke/cc7bfc32-2202-5695-aafd-72552f98ca86/scratchpad` (bản sao tạm của session).
+Đặt `export PATH="/opt/flutter/bin:$PATH"` và làm việc trong `/home/user/mekoke`.
 
-1. **Cài Flutter**
-   - Tải `https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json`, lấy `current_release.stable` (hash), tìm phần tử `releases[]` có cùng `hash`, lấy trường `archive`.
-   - Tải `https://storage.googleapis.com/flutter_infra_release/releases/<archive>` rồi `tar -xJf <file> -C /opt`.
-   - Chạy lần lượt: `git config --global --add safe.directory /opt/flutter`, `export PATH="/opt/flutter/bin:$PATH"`, `flutter config --no-analytics`, `flutter --version`.
-   - Không commit SDK, không cài Android SDK.
-2. **Tạo project**
-   - Sao lưu `README.md`, rồi chạy tại `/home/user/mekoke`: `flutter create --project-name steady --org com.mekoke --platforms android --empty .`
-   - Khôi phục `README.md` gốc (dòng `# mekoke`) và thêm mục "Phát triển" (bước 5). Nếu có `test/widget_test.dart` thì xoá.
-3. **Lệnh kiểm chứng**, chạy theo đúng thứ tự:
+1. Chạy `flutter test` để xác nhận mốc **+722, 0 rớt**.
+2. **Trước khi sửa `lib/data/database.dart`:**
+   - Chép `drift_schemas/drift_schema_v2.json` ra scratchpad.
+   - Chạy `dart run drift_dev schema dump lib/data/database.dart drift_schemas/`.
+   - `diff` bản vừa dump với bản đã chép:
+     - Khác ở phần bảng hoặc cột: **dừng lại**, ghi vào `.bangiao/thay-doi.md`, không sửa DB.
+     - Chỉ khác ở `_meta`: ghi lại rồi làm tiếp.
+3. Sửa DB theo §4.1, rồi chạy lần lượt:
+   - `dart run build_runner build --delete-conflicting-outputs`
+   - `dart run drift_dev schema dump lib/data/database.dart drift_schemas/` (ra `drift_schema_v3.json`)
+   - `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/` (ra `schema_v3.dart`; `schema.dart` có `versions = [1, 2, 3]`)
+4. Làm §4.2 đến §7, rồi sửa ARB (§8) và chạy `flutter gen-l10n`.
+5. Kiểm chứng:
    ```
    flutter pub get
    dart run build_runner build --delete-conflicting-outputs
@@ -66,426 +139,727 @@ Những việc để sau, không chặn GĐ1: backend đăng nhập/sao lưu, fi
    dart format --output=none --set-exit-if-changed lib test
    flutter analyze
    flutter test
+   TZ=America/New_York flutter test
+   grep -rn "DateTime.now()" lib            # không được có kết quả
+   grep -rn "Color(0x" lib                  # chỉ được có trong lib/core/theme/tokens.dart
+   graphify update .                        # nếu có lệnh graphify (theo CLAUDE.md)
    ```
-   Nếu test báo `Failed to load dynamic library 'libsqlite3.so'` thì chạy `apt-get install -y libsqlite3-dev` và ghi việc này vào README.
-4. Nếu có lệnh `graphify` thì chạy `graphify update .` sau khi xong code (theo CLAUDE.md).
-5. Mục "Phát triển" trong README chỉ gồm: phiên bản Flutter/Dart đã cài, dòng `export PATH`, và các lệnh ở bước 3.
+
+**Coder không sửa file test nào**, trừ các file sinh ra trong `test/generated_migrations/`.
+- Sau khi Coder xong, các test rớt phải nằm trong danh sách §10.2.
+- Coder ghi danh sách test rớt thực tế và mọi chỗ lệch kế hoạch (kèm lý do) vào `.bangiao/thay-doi.md`.
 
 ---
 
 ## 3. Danh sách file
 
-Mọi đường dẫn tính từ `/home/user/mekoke/`. File do `flutter create` sinh ra thì chỉ sửa đúng chỗ được nêu.
-
 | File | Việc |
 |---|---|
-| `pubspec.yaml` | sửa: deps (mục 4); `flutter: generate: true`, `uses-material-design: true`; assets `assets/icons/`, `assets/fonts/OFL-Newsreader.txt`, `assets/fonts/OFL-Figtree.txt`; fonts `Newsreader` → `assets/fonts/Newsreader-Variable.ttf`, `Figtree` → `assets/fonts/Figtree-Variable.ttf` |
-| `l10n.yaml` | mới: `arb-dir: lib/l10n`, `template-arb-file: app_en.arb`, `output-localization-file: app_localizations.dart`, `output-class: AppLocalizations`, `nullable-getter: false`. Nếu Flutter cảnh báo về `synthetic-package` thì làm theo hướng dẫn trong cảnh báo; file sinh ra phải nằm ở `lib/l10n/` |
-| `README.md` | thêm mục "Phát triển" |
-| `android/app/src/main/AndroidManifest.xml` | `android:label="Steady"`, `android:allowBackup="false"` (Q13). Không thêm permission nào |
-| `android/app/src/main/res/values/colors.xml` | mới: `<color name="launch_bg">#121110</color>` |
-| `android/app/src/main/res/drawable/launch_background.xml`, `drawable-v21/launch_background.xml` | item nền dùng `@color/launch_bg` thay cho màu trắng |
-| `android/app/src/main/res/values/styles.xml`, `values-night/styles.xml` | `NormalTheme` có `android:windowBackground` = `@color/launch_bg` |
-| `design/steady-ds/README.md`, `design/steady-ds/tokens.json` | chép từ `$SRC/steady-ds/project/` |
-| `design/steady-ds/components/` | chép từ `$SRC/steady-ds/project/components/`: mọi `*/README.md`, `bundle.js`, `bundle.css`. Bỏ `preview.html` |
-| `design/mockups/steady/*.dc.html` | chép từ `$SRC/steady-canvas/project/*.dc.html` |
-| `design/mockups/money/*.dc.html` | chép từ `$SRC/money-canvas/project/*.dc.html` |
-| `assets/icons/*.svg` | chép cả 67 file từ `$SRC/steady-ds/project/assets/Icons/`, giữ nguyên tên |
-| `assets/icons/LICENSE` | chép từ `$SRC/ds-src/lucide/package/LICENSE` (ISC) |
-| `assets/fonts/*` | mục 5.2 |
-| `lib/main.dart` | thay toàn bộ (mục 5.9) |
-| `lib/app.dart` | `SteadyApp` |
-| `lib/core/services.dart` | `AppServices`, `ServicesScope` |
-| `lib/core/time/local_date.dart` | `LocalDate` |
-| `lib/core/time/today_notifier.dart` | `TodayNotifier` |
-| `lib/core/format/formatting.dart` | định dạng theo locale |
-| `lib/core/theme/tokens.dart` | `SteadyColors`, `SteadySpace`, `SteadyRadius`, `SteadySize` |
-| `lib/core/theme/typography.dart` | `SteadyText` |
-| `lib/core/theme/app_theme.dart` | `buildSteadyTheme` |
-| `lib/data/database.dart` (+ `database.g.dart` sinh ra, có commit) | Drift |
-| `lib/data/habit_repository.dart`, `lib/data/check_in_repository.dart` | repository |
-| `lib/l10n/app_en.arb` (+ file sinh ra) | copy ở mục 7 |
-| `lib/features/shell/home_shell.dart` | khung 5 tab |
-| `lib/features/placeholder/placeholder_screen.dart` | màn chờ |
-| `lib/features/streaks/streak_math.dart`, `habit_name.dart`, `streaks_screen.dart`, `add_habit_sheet.dart`, `habit_actions_sheet.dart` | Streaks |
-| `lib/features/check_in/check_in_rules.dart`, `check_in_screen.dart` | Check-in |
-| `lib/ui/components/steady_icon.dart`, `steady_button.dart`, `steady_chip.dart`, `steady_progress_bar.dart`, `streak_card.dart`, `mood_picker.dart`, `steady_tab_bar.dart`, `steady_text_field.dart`, `steady_dialogs.dart` | component |
-| `test/helpers/test_app.dart`, `test/app_smoke_test.dart` | Coder viết (mục 9) |
+| `drift_schemas/drift_schema_v3.json` | sinh ra, giữ trong repo |
+| `test/generated_migrations/*` | sinh lại |
+| `lib/data/money_types.dart` | mới, §4.2 |
+| `lib/data/database.dart` (+ `database.g.dart`) | §4.1 |
+| `lib/data/money_repository.dart` | mới, §4.3 |
+| `lib/data/prefs_repository.dart` | thêm `loadCurrency` (§4.4) |
+| `lib/core/services.dart` | thêm `money` (§4.5) |
+| `lib/core/format/money_format.dart` | mới, §5.2 |
+| `lib/core/format/formatting.dart` | thêm `formatMonth` (§5.2) |
+| `lib/features/money/amount_input.dart` | mới, §5.1 |
+| `lib/features/money/money_math.dart` | mới, §5.3 |
+| `lib/features/money/money_labels.dart` | mới, §5.4 |
+| `lib/features/money/money_screen.dart` | mới, §7.1 |
+| `lib/features/money/entry_editor_screen.dart` | mới, §7.2 |
+| `lib/features/money/note_sheet.dart` | mới, §7.3 |
+| `lib/features/money/entries_screen.dart` | mới, §7.4 |
+| `lib/features/money/entry_actions_sheet.dart` | mới, §7.5 |
+| `lib/features/money/entry_row.dart` | mới, §7.6 |
+| `lib/features/shell/home_shell.dart` | tab 3 thành `MoneyScreen(isActive: _index == 3)` |
+| `lib/ui/components/icon_tile.dart`, `keypad.dart`, `transaction_row.dart`, `bar_chart_row.dart` | mới, §6 |
+| `lib/ui/components/steady_icon.dart` | thêm hằng icon (§6) |
+| `lib/l10n/app_en.arb` (+ file sinh ra) | §8 |
+
+`PlaceholderScreen` giữ nguyên, vì tab Focus vẫn dùng.
 
 ---
 
-## 4. Phụ thuộc
+## 4. Dữ liệu
 
-Thêm bằng lệnh, không tự gõ số phiên bản:
-
-1. `flutter pub add flutter_localizations --sdk=flutter`
-2. `flutter pub add drift drift_flutter flutter_svg clock characters intl:any`. Để `intl` ở `any` để nó theo đúng bản mà `flutter_localizations` ghim; đây là lỗi xung đột phiên bản rất hay gặp.
-3. `flutter pub add --dev drift_dev build_runner`
-
-Giữ `flutter_lints` do template sinh. **Cấm** thêm riverpod, provider, get_it, google_fonts hay bất kỳ package nào khác.
-
----
-
-## 5. Nền móng
-
-### 5.1 Quy tắc chung
-- Thời gian chỉ lấy qua `services.clock.now()` (`package:clock`). Trong `lib/` không được có `DateTime.now()`.
-- Màu chỉ lấy từ `SteadyColors.of(context)`. `Color(0x…)` chỉ được xuất hiện trong `tokens.dart`.
-- Khoảng cách, bo góc, kích thước lấy từ `SteadySpace`, `SteadyRadius`, `SteadySize`. Kiểu chữ lấy từ `SteadyText`.
-- Mọi chữ hiển thị đi qua `AppLocalizations`.
-- Dùng API không deprecated của bản Flutter đã cài (ví dụ `Color.withValues(alpha:)`).
-- Sau mỗi `await` trong widget phải kiểm `context.mounted`. Lấy `ScaffoldMessenger.of(context)` và `Navigator` **trước** khi `await` hoặc `pop`.
-
-### 5.2 Font
-Tải từ `https://raw.githubusercontent.com/google/fonts/main/`:
-- `ofl/newsreader/Newsreader%5Bopsz%2Cwght%5D.ttf` → `assets/fonts/Newsreader-Variable.ttf`
-- `ofl/figtree/Figtree%5Bwght%5D.ttf` → `assets/fonts/Figtree-Variable.ttf`
-- `ofl/newsreader/OFL.txt` → `assets/fonts/OFL-Newsreader.txt`
-- `ofl/figtree/OFL.txt` → `assets/fonts/OFL-Figtree.txt`
-
-Gặp 404 thì xem đúng tên file qua `https://api.github.com/repos/google/fonts/contents/ofl/<tên>`. Không dùng file Italic, không dùng `.woff2` của bản preview.
-
-### 5.3 `tokens.dart`
-Chép đúng giá trị từ `design/steady-ds/tokens.json`, không tự đặt token mới.
-- `@immutable class SteadyColors extends ThemeExtension<SteadyColors>`
-  - Field theo camelCase của tên token: `bg, surface, surface2, line, lineStrong, ink, inkMuted, amber, onAmber, amberSoft, tide, onTide, tideSoft, rose, onRose, roseSoft`.
-  - Thêm `sheetShadow` lấy màu từ `shadow-sheet`: dark `0xB3000000`, light `0x241C1916`, bedtime `0xFF000000`. Lưu ý CSS `#RRGGBBAA` chuyển sang Flutter là `0xAARRGGBB`.
-  - Có `static const dark`, `light`, `bedtime`; `copyWith`; `lerp` (dùng `Color.lerp` cho từng field); `static SteadyColors of(BuildContext)`.
-- `abstract final class SteadySpace { s1=4, s2=8, s3=12, s4=16, s5=20, s6=24, s8=32, s12=48 }`
-- `SteadyRadius { sm=8, md=14, lg=22, xl=30, full=9999 }`
-- `SteadySize { tap=48, button=52, buttonMd=44, play=72, ring=264, ringStroke=14, tabbar=72 }`. Riêng `buttonMd` lấy từ `bundle.css` `.st-btn-md`.
-
-### 5.4 `typography.dart`
-`abstract final class SteadyText` có các `static const TextStyle` **không mang màu**: `countXl, timerXl, display, title` (Newsreader); `headline, body, bodyStrong, label, caption, overline, moneyXl, countGym, stat` (Figtree).
-- `fontSize` lấy từ tokens; `height = lineHeight / fontSize`; `letterSpacing = em × fontSize`.
-- Đặt **cả** `fontWeight: FontWeight.wN` **lẫn** `fontVariations: [FontVariation('wght', N)]`, vì font variable không tự nhận `fontWeight`.
-- `countGym` và `stat` có `fontFeatures: [FontFeature.tabularFigures()]`.
-
-### 5.5 `app_theme.dart`
-`ThemeData buildSteadyTheme(SteadyColors c, Brightness b)`:
-- `useMaterial3: true`, `fontFamily: 'Figtree'`, `scaffoldBackgroundColor: c.bg`, `extensions: [c]`.
-- `ColorScheme`:
-  - primary amber / onPrimary onAmber; secondary tide / onSecondary onTide; error rose / onError onRose.
-  - surface surface / onSurface ink; onSurfaceVariant inkMuted; outline lineStrong; outlineVariant line.
-  - primaryContainer amberSoft / onPrimaryContainer amber; secondaryContainer tideSoft / onSecondaryContainer tide; errorContainer roseSoft / onErrorContainer rose.
-  - surfaceContainerLowest, Low và surfaceContainer = surface; surfaceContainerHigh và Highest = surface2.
-  - **`surfaceTint: Colors.transparent`** để sheet và dialog không bị ám màu amber.
-- splashColor và highlightColor = ink ở alpha 0.08.
-- textSelectionTheme: con trỏ amber, vùng chọn amber alpha 0.4, tay nắm amber.
-- bottomSheetTheme: nền trong suốt, elevation 0.
-- dialogTheme: nền surface, bo `radius-lg`.
-- snackBarTheme: nền surface2, chữ `body` màu ink, `behavior: floating`.
-- GĐ1 chỉ dùng `buildSteadyTheme(SteadyColors.dark, Brightness.dark)`.
-
-### 5.6 Icon (`steady_icon.dart`)
-- `abstract final class SteadyIcons { audioWaveform='audio-waveform', timer='timer', sprout='sprout', wallet='wallet', notebookPen='notebook-pen', plus='plus' }`. Chỉ khai báo những tên GĐ1 dùng.
-- `SteadyIcon(String name, {double size = 24, Color? color, String? semanticLabel})` render bằng `SvgPicture.asset('assets/icons/$name.svg')` với `colorFilter: ColorFilter.mode(color ?? ink, BlendMode.srcIn)`. Nếu `semanticLabel == null` thì `excludeFromSemantics: true`.
-
-### 5.7 Định dạng (`formatting.dart`)
-- `String formatLocaleTag(Locale appLocale, Locale deviceLocale)`: nếu hai locale cùng `languageCode` và `DateFormat.localeExists(tag của máy)` thì trả tag của máy (ví dụ `en_GB`); ngược lại trả `appLocale.languageCode`.
-- `String formatLocaleOf(BuildContext c)` dùng `Localizations.localeOf(c)` và `View.of(c).platformDispatcher.locale`.
-- `String formatShortDate(LocalDate d, LocalDate today, String tag)`: cùng năm với `today` thì dùng `DateFormat.MMMd` ("May 28"), khác năm thì `DateFormat.yMMMd` ("May 28, 2025").
-- `String formatLongDate(LocalDate d, String tag)` dùng `DateFormat.MMMMEEEEd` ("Friday, October 2").
-- `main()` và test phải gọi `await initializeDateFormatting()` (`package:intl/date_symbol_data_local.dart`).
-
-### 5.8 Thời gian
+### 4.1 `database.dart`, schema v3
 ```dart
-// local_date.dart
-@immutable
-class LocalDate implements Comparable<LocalDate> {
-  LocalDate(int year, int month, int day); // ArgumentError nếu ngày không có thật (so khứ hồi với DateTime.utc)
-  factory LocalDate.fromDateTime(DateTime dt); // dt.isUtc thì đổi toLocal() trước
-  factory LocalDate.parse(String iso);         // đúng dạng 'YYYY-MM-DD', còn lại FormatException
-  final int year, month, day;
-  int get epochDay;                 // DateTime.utc(y,m,d).millisecondsSinceEpoch ~/ 86400000
-  int daysUntil(LocalDate other);   // other.epochDay - epochDay
-  LocalDate addDays(int days);
-  DateTime toDateTime();            // DateTime(y,m,d), giờ máy
-  String toIso();                   // 'YYYY-MM-DD', đệm số 0
-  bool isBefore(LocalDate o); bool isAfter(LocalDate o);
-  // compareTo, ==, hashCode, toString
-}
+import 'money_types.dart';
 
-// today_notifier.dart
-class TodayNotifier extends ValueNotifier<LocalDate> with WidgetsBindingObserver {
-  TodayNotifier(Clock clock);
-  void refresh(); // value = LocalDate.fromDateTime(clock.now())
-  void start();   // addObserver + Timer tới DateTime(y, m, d + 1) + 1 giây; khi chạy thì refresh() rồi hẹn lại
-  void stop();    // removeObserver + huỷ Timer; gọi nhiều lần không lỗi
-  // didChangeAppLifecycleState: khi resumed thì refresh() và hẹn lại Timer. dispose() gọi stop().
-}
-```
-
-### 5.9 DB, repository, services, khởi động
-```dart
-// database.dart
-class LocalDateConverter extends TypeConverter<LocalDate, String> { const LocalDateConverter(); } // toIso / parse
-@DataClassName('Habit')
-class Habits extends Table {
+@DataClassName('MoneyEntry')
+class MoneyEntries extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()(); // KHÔNG dùng withLength: Drift đếm theo UTF-16, sai với emoji
-  TextColumn get cleanSince => text().map(const LocalDateConverter())();
+  IntColumn get amountMinor =>
+      // ignore: recursive_getters
+      integer().check(amountMinor.isBetweenValues(1, kMaxAmountMinor))();
+  TextColumn get category => textEnum<MoneyCategory>()();
+  TextColumn get note => text().nullable()();
+  TextColumn get date => text().map(const LocalDateConverter())();
   DateTimeColumn get createdAt => dateTime()();
 }
-@DataClassName('CheckIn')
-class CheckIns extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get date => text().map(const LocalDateConverter()).unique()();
-  IntColumn get mood => integer().check(mood.isBetweenValues(1, 5))();
-  TextColumn get note => text().nullable()();
-  DateTimeColumn get updatedAt => dateTime()();
-}
-@DriftDatabase(tables: [Habits, CheckIns])
-class AppDatabase extends _$AppDatabase {
-  AppDatabase(super.e);
-  static AppDatabase openDefault(); // AppDatabase(driftDatabase(name: 'steady'))
-  @override int get schemaVersion => 1; // migration: onCreate => m.createAll()
+
+@DriftDatabase(tables: [Habits, CheckIns, Fasts, Prefs, MoneyEntries])
+// schemaVersion => 3
+// onUpgrade: giữ nguyên khối `if (from < 2) {...}`; thêm
+//   if (from < 3) { await m.createTable(moneyEntries); }
+```
+- Không đổi `Habits`, `CheckIns`, `Fasts`, `Prefs`.
+- **Không có cột `kind`.** Mọi dòng của bảng đều là khoản chi.
+- Tên bảng SQL là `money_entries`, lớp là `MoneyEntry`. Không đặt tên `Expense`, để sau này nếu cần thêm loại khác thì chỉ cần một migration `addColumn` có giá trị mặc định. Lần này không làm gì thêm cho việc đó.
+- Không đặt tên `Transaction` hay `Transactions`, để tránh trùng với API transaction của Drift.
+- Danh mục được lưu bằng `name` của enum, nên sau này không được đổi tên giá trị enum.
+
+### 4.2 `lib/data/money_types.dart` (mới)
+Đặt trong `lib/data`, không đặt trong `lib/features`. Lý do: Reviewer đã ghi nhận việc tầng data import tầng feature là nợ kỹ thuật, nên không tạo thêm.
+```dart
+/// Thứ tự khai báo là thứ tự trên lưới chọn; 7 mục đầu hiện sẵn.
+enum MoneyCategory {
+  groceries, eatingOut, transport, bills, shopping, health, gifts,
+  housing, travel, phone, education, other,
 }
 
-// habit_repository.dart
-class HabitRepository {
-  HabitRepository(AppDatabase db, Clock clock);
-  Stream<List<Habit>> watchHabits(); // ORDER BY cleanSince ASC, createdAt ASC, id ASC
-  Future<Habit> addHabit({required String name, required LocalDate cleanSince, required LocalDate today});
-  // ArgumentError nếu normalizeHabitName(name) == null hoặc cleanSince.isAfter(today). Lưu tên đã chuẩn hoá.
-  Future<bool> resetStreak(int id, LocalDate today); // cleanSince = today; id không tồn tại thì trả false
-  Future<bool> deleteHabit(int id);                  // id không tồn tại thì trả false
-}
+const kMaxAmountMinor = 999999999999;
+const kMoneyNoteMaxChars = 60;
 
-// check_in_repository.dart
-class CheckInRepository {
-  CheckInRepository(AppDatabase db, Clock clock);
-  Future<CheckIn?> getForDate(LocalDate date);
-  Future<void> saveForDate({required LocalDate date, required Mood mood, String? note});
-  // note đi qua normalizeCheckInNote (ArgumentError nếu quá dài).
-  // Upsert theo `date`: insert(..., onConflict: DoUpdate(..., target: [checkIns.date])).
-}
+/// Giống normalizeCheckInNote: xuống dòng thành dấu cách, trim, rỗng thì null;
+/// quá kMoneyNoteMaxChars grapheme thì ném ArgumentError.
+String? normalizeMoneyNote(String raw);
+```
 
-// services.dart
-class AppServices {
-  AppServices({required AppDatabase db, required Clock clock}); // tự tạo habits, checkIns, today
-  final AppDatabase db; final Clock clock;
-  final HabitRepository habits; final CheckInRepository checkIns; final TodayNotifier today;
-  Future<void> dispose(); // today.dispose(); await db.close();
-}
-class ServicesScope extends InheritedWidget {
-  const ServicesScope({required this.services, required super.child});
-  static AppServices of(BuildContext context);
+### 4.3 `lib/data/money_repository.dart` (theo kiểu `habit_repository.dart`)
+```dart
+class MoneyRepository {
+  MoneyRepository(AppDatabase db, Clock clock);
+  Stream<List<MoneyEntry>> watchAll();
+  Stream<List<MoneyEntry>> watchRecent({int limit = 5});
+  Stream<List<MoneyEntry>> watchBetween(LocalDate from, LocalDate to); // gồm cả hai đầu
+  Future<MoneyEntry> add({required int amountMinor, required MoneyCategory category,
+      required LocalDate date, String? note});
+  Future<bool> update(int id, {required int amountMinor, required MoneyCategory category,
+      required LocalDate date, String? note});
+  Future<bool> delete(int id);
 }
 ```
-- `lib/main.dart` làm theo thứ tự: `WidgetsFlutterBinding.ensureInitialized()`, `SystemChrome.setPreferredOrientations([portraitUp])`, `await initializeDateFormatting()`, rồi `runApp(SteadyApp(services: AppServices(db: AppDatabase.openDefault(), clock: const Clock())))`.
-- `lib/app.dart`: `SteadyApp({required AppServices services})` bọc `ServicesScope` quanh `MaterialApp`:
-  - `title: 'Steady'`, `debugShowCheckedModeBanner: false`, theme Dark.
-  - `localizationsDelegates: AppLocalizations.localizationsDelegates`, `supportedLocales: AppLocalizations.supportedLocales`.
-  - `home: const HomeShell()`.
+- **Thứ tự** của mọi stream: `date DESC, createdAt DESC, id DESC`.
+- **`watchBetween`** so chuỗi ISO: `t.date.isBetweenValues(from.toIso(), to.toIso())`.
+- **Kiểm đầu vào** ở `add` và `update`, sai thì ném `ArgumentError`:
+  - `amountMinor` nằm ngoài [1, `kMaxAmountMinor`].
+  - Ghi chú quá dài (qua `normalizeMoneyNote`).
+- **Ghi chú** luôn được lưu ở dạng đã chuẩn hoá.
+- **`add`:** `createdAt = clock.now()`.
+- **`update`:** ghi lại amountMinor, category, date, note. **Không đổi `createdAt`.** Trả `false` khi không có `id`.
+- **`delete`:** trả `false` khi không có `id`.
+- Repository không kiểm "ngày không ở tương lai"; UI đã chặn.
+
+### 4.4 `prefs_repository.dart`
+```dart
+static const _currencyKey = 'money.currency';
+/// Có giá trị hợp lệ (khớp ^[A-Z]{3}$) thì trả về giá trị đó.
+/// Không có hoặc không hợp lệ: ghi [fallback] (lỗi ghi thì bỏ qua) rồi trả [fallback].
+/// Lỗi đọc: trả [fallback], không ghi. Hàm này không bao giờ ném lỗi.
+Future<String> loadCurrency({required String fallback});
+```
+
+### 4.5 `services.dart`
+Thêm `final MoneyRepository money;`, khởi tạo bằng `MoneyRepository(db, clock)`. Không đổi gì khác. `test/helpers/test_app.dart` không cần sửa.
 
 ---
 
-## 6. Màn hình và component
+## 5. Logic thuần (không có widget; test được bằng unit test)
 
-Hình dáng component bám theo `design/steady-ds/components/<Tên>/README.md` cộng với class `.st-*` trong `design/steady-ds/components/bundle.css`. Bố cục màn hình bám theo `design/mockups/steady/Streaks.dc.html` và `CheckIn.dc.html`. **Riêng TabBar trong mockup đang có 4 tab là bản cũ; làm theo `components/TabBar/README.md` với 5 tab.**
+### 5.1 `lib/features/money/amount_input.dart`
+```dart
+const kAmountMaxIntegerDigits = 9;
 
-### 6.1 Component (`lib/ui/components/`)
-- **`SteadyButton`**
-  - Chữ ký: `({required String label, required VoidCallback? onPressed, SteadyButtonVariant variant = .secondary, SteadyButtonSize size = .lg, bool block = false, String? icon})`.
-  - Dựng trên `FilledButton` với `StadiumBorder`, elevation 0, `tapTargetSize: MaterialTapTargetSize.padded` (nút md cao 44 vẫn có vùng chạm 48).
-  - `minimumSize` cao 52 (lg) hoặc 44 (md); padding ngang 24 (lg) hoặc 20 (md). Chữ `bodyStrong`; icon 20; khoảng cách 8. Nhãn để trong `Flexible`, `maxLines: 1`, ellipsis.
-  - Màu: primary nền amber / chữ onAmber; secondary surface2 / ink; ghost trong suốt / amber; danger roseSoft / rose.
-  - `onPressed == null` thì bọc `Opacity(0.4)` và giữ nguyên màu (đặt `disabled*Color` bằng màu thường).
-- **`SteadyChip`**: `({required String label, SteadyChipTone tone = .neutral, String? icon})`. Cao **tối thiểu** 28 (không cố định), padding ngang 12 và dọc 4, bo full; icon 16, khoảng cách 4, chữ `label`. Tone: neutral surface2/inkMuted, amber amberSoft/amber, tide tideSoft/tide, rose roseSoft/rose. Nhãn ellipsis.
-- **`SteadyProgressBar`**: `({required double value, required String semanticLabel, SteadyBarTone tone = .amber})`. Kẹp value vào 0..1. Cao 8, bo `sm`, rãnh surface2, phần đã chạy tide hoặc amber. Semantics có `label` và `value: '${(v*100).round()}%'`.
-- **`StreakCard`**
-  - Chữ ký: `({required String habit, required int days, required String since, StreakCardSize size = .lg, StreakMilestoneView? milestone, VoidCallback? onTap})`, với `class StreakMilestoneView { final String label; final double progress; }`.
-  - Thẻ: padding 20, bo `lg`, nền surface, khoảng cách 8.
-  - Dòng đầu là `Wrap(alignment: spaceBetween)` gồm tên (`headline`, ink) và since (`label`, inkMuted).
-  - Dòng số gồm số (`countXl` nếu lg, `stat` nếu sm) và đơn vị (`body`, inkMuted, chọn số ít/số nhiều qua l10n), bọc `FittedBox(fit: scaleDown, alignment: centerLeft)`. Với lg thì thêm margin dọc 8.
-  - Phần mốc gồm `SteadyProgressBar` tide và caption inkMuted.
-  - Toàn thẻ là một `InkWell` (bo `lg`) với `MergeSemantics` + `Semantics(button: onTap != null)`.
-- **`MoodPicker`**
-  - Chữ ký: `({required Mood? value, required ValueChanged<Mood> onChanged})`.
-  - Lưới 5 cột bằng nhau, khoảng cách 8. Mỗi ô: padding dọc 12, bo `md`, viền 2 (trong suốt; ô đang chọn thì amber), nền surface2 (đang chọn thì amberSoft), màu inkMuted (đang chọn thì amber).
-  - Nội dung ô: mặt cười 32 + khoảng 4 + nhãn `caption` bọc `FittedBox(scaleDown)`, `maxLines: 1`.
-  - Mỗi ô là `Semantics(button: true, selected: on, inMutuallyExclusiveGroup: true, label: tên mức)`.
-  - Mặt cười là `SvgPicture.string` dùng mẫu sau (đổi `{D}` theo mức 1..5) và tô màu bằng `colorFilter`:
-    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><circle cx="9" cy="10" r="0.6" fill="#000"/><circle cx="15" cy="10" r="0.6" fill="#000"/><path d="{D}"/></svg>`
-  - Giá trị `{D}`: 1 `M8 16.5q4-4 8 0` · 2 `M8.5 16q3.5-2 7 0` · 3 `M8.5 15.5h7` · 4 `M8.5 14.5q3.5 2.5 7 0` · 5 `M7.5 14q4.5 4.5 9 0`.
-- **`SteadyTabBar`**
-  - Chữ ký: `({required List<SteadyTabItem> items, required int current, required ValueChanged<int> onChanged})`, với `SteadyTabItem(icon, label)`.
-  - Cao 72 cộng phần đệm an toàn phía dưới. Nền surface, viền trên 1px màu line. Các cột chia đều.
-  - Viên nền icon 56×30 bo full; icon 22; khoảng cách 4; nhãn `caption`, `maxLines: 1`, ellipsis.
-  - Tab đang mở: viên amberSoft, icon amber, chữ ink. Tab khác: inkMuted.
-  - Bọc `MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3)`. Semantics mỗi tab: `button`, `selected`, `label`.
-- **`SteadyTextField`**: `({required TextEditingController controller, String? hint, int? maxLength, int minLines = 1, int maxLines = 1, List<TextInputFormatter>? inputFormatters, TextInputAction? textInputAction, bool autofocus = false, ValueChanged<String>? onChanged})`. Nền surface, viền 2px lineStrong (khi focus là amber), bo `md`, padding 12/16. Chữ `body` ink, hint inkMuted. `counterText: ''` (ẩn bộ đếm mặc định), `MaxLengthEnforcement.enforced`, `onTapOutside` thì unfocus.
-- **`steady_dialogs.dart`**
-  - `Future<T?> showSteadySheet<T>(BuildContext, {required WidgetBuilder builder})`: dùng `showModalBottomSheet` với `isScrollControlled: true`, `useSafeArea: true`, nền trong suốt. Nội dung là Container nền surface, bo trên `xl`, `BoxShadow(offset: (0,-12), blurRadius: 40, color: sheetShadow)`, padding 24 trên, 20 hai bên, dưới 20 cộng `viewInsets.bottom`. Bên trong là `SingleChildScrollView` + `Column(mainAxisSize: min)`.
-  - `Future<bool> showSteadyConfirmDialog(BuildContext, {required String title, required String body, required String confirmLabel, required String cancelLabel})`: tiêu đề `title`, thân `body` inkMuted. Hai nút md: ghost (huỷ) và danger (xác nhận). Chỉ trả `true` khi bấm xác nhận; chạm ra ngoài thì `false`.
-  - `void showSteadySnackBar(ScaffoldMessengerState m, String message)`: ẩn snackbar đang hiện rồi mới hiện cái mới.
+@immutable
+class AmountInput {
+  static const empty = AmountInput._('');
+  factory AmountInput.fromMinor(int minor, int decimals);
+  final String text;          // dạng chuẩn: "", "0", "12", "12.", "12.4"
+  bool get isEmpty;
+  bool get hasSeparator;      // có '.'
+  int get fractionDigits;     // số chữ số sau '.'
+  AmountInput press(String key, {required int decimals}); // key: '0'–'9', '.', 'del'; key khác thì ArgumentError
+  int toMinor(int decimals);  // "" ra 0; "12." với 2 ra 1200; "12.4" với 2 ra 1240
+  // ==, hashCode theo text
+}
 
-### 6.2 Shell (`home_shell.dart`) và placeholder
-- `HomeShell` (StatefulWidget). `initState` gọi `services.today.start()`, `dispose` gọi `stop()`.
-- Thứ tự tab cố định: 0 Focus (`audio-waveform`), 1 Timer (`timer`), 2 Streaks (`sprout`), 3 Money (`wallet`), 4 Check-in (`notebook-pen`). Mở app vào tab 0.
-- `Scaffold(body: SafeArea(bottom: false, child: IndexedStack(...)), bottomNavigationBar: SteadyTabBar)`. `IndexedStack` giữ trạng thái của từng tab.
-- `PopScope(canPop: index == 0)`: khi bị chặn (`didPop == false`) thì chuyển về tab 0. Sheet và dialog tự đóng trước theo mặc định.
-- `AnnotatedRegion<SystemUiOverlayStyle>`: status bar trong suốt, icon sáng; navigation bar màu surface, icon sáng.
-- `PlaceholderScreen({required String title})`: padding trên 32, hai bên 20. Tiêu đề `display` ink, cách 16, rồi `placeholderBody` (`body`, inkMuted).
+/// Chuỗi hiển thị trên màn nhập. Quy tắc ở cuối mục này.
+String formatAmountInput(MoneyFormat m, AmountInput input);
+```
 
-### 6.3 Streaks
-- **`streak_math.dart`**
-  - `const kStreakMilestones = [1, 3, 7, 14, 30, 60, 90, 180, 365];`
-  - `int daysClean(LocalDate cleanSince, LocalDate today)` = `max(0, cleanSince.daysUntil(today))` (phương án A ở Q5).
-  - `class MilestoneProgress { final int next; final int remaining; final double progress; }`
-  - `MilestoneProgress? nextMilestone(int days)`:
-    - `next` = mốc nhỏ nhất lớn hơn `days`; không có thì trả `null` (từ 365 trở lên).
-    - `prev` = mốc lớn nhất nhỏ hơn hoặc bằng `days`, không có thì 0.
-    - `progress = (days - prev) / (next - prev)`; `remaining = next - days`.
-- **`habit_name.dart`**: `const kHabitNameMaxChars = 40;` và `String? normalizeHabitName(String raw)`: trim; trả `null` nếu rỗng, chứa `\r` hoặc `\n`, hoặc dài quá 40 **grapheme** (`raw.characters.length`).
-- **`StreaksScreen`**
-  - Lắng nghe `StreamBuilder(habits.watchHabits())` và `ValueListenableBuilder(today)`.
-  - Toàn bộ là `ListView` (padding 32 trên, 20 hai bên và dưới, khoảng cách 16), gồm lần lượt:
-    1. Tiêu đề `display` "Streaks".
-    2. Thói quen đầu tiên: `StreakCard` lg, có mốc nếu `nextMilestone` khác null. Nhãn mốc dùng `milestoneNext`.
-    3. Các thói quen còn lại: `StreakCard` sm, không có mốc.
-    4. `SteadyButton` secondary, block, icon `plus`, nhãn "Add habit".
-  - Since hiển thị bằng `streakSince(formatShortDate(...))`.
-  - Chưa có thói quen nào: tiêu đề + `streaksEmpty` (`body`, inkMuted) + nút "Add habit".
-  - Stream chưa có dữ liệu: chỉ hiện tiêu đề, không hiện spinner.
-  - Chạm vào thẻ thì mở `showHabitActionsSheet`.
-- **`add_habit_sheet.dart`**: `Future<void> showAddHabitSheet(BuildContext context)`.
-  - Nội dung:
-    1. Tiêu đề `title` "Add habit".
-    2. Nhãn `headline` "Habit", bên dưới là `SteadyTextField` (hint "No sugar", `maxLength: 40`, một dòng, `autofocus`, `textCapitalization.sentences`).
-    3. Nhãn `headline` "Clean since", bên dưới là một ô bấm được, trông giống text field (cao tối thiểu 48), hiện `formatShortDate`. Bấm vào thì gọi `showDatePicker(firstDate: DateTime(today.year - 100), lastDate: today.toDateTime(), initialDate: ngày đang chọn)`.
-    4. Nút primary lg block "Save habit".
-  - Nút Save bị vô hiệu khi `normalizeHabitName == null` hoặc đang lưu.
-  - Khi lưu: gọi `addHabit(today: services.today.value)` rồi đóng sheet. Lỗi thì hiện snackbar `saveError` và giữ sheet mở.
-- **`habit_actions_sheet.dart`**: `Future<void> showHabitActionsSheet(BuildContext context, Habit habit)`.
-  - Tiêu đề `title` là tên thói quen (tối đa 2 dòng, ellipsis). Hai nút md block, cách nhau 12.
-  - "Reset streak" (secondary): gọi `resetStreak(id, today)`, đóng sheet, hiện snackbar `resetDone`.
-  - "Delete habit" (danger): mở `showSteadyConfirmDialog(deleteHabitTitle, deleteHabitBody, delete, cancel)`. Nếu `true` thì gọi `deleteHabit` rồi đóng sheet; nếu không thì giữ nguyên.
+Quy tắc `press`:
 
-### 6.4 Check-in
-- **`check_in_rules.dart`**
-  - `enum Mood { awful(1), low(2), okay(3), good(4), great(5); final int value; static Mood fromValue(int v); }`: ngoài 1..5 thì ArgumentError.
-  - `const kCheckInNoteMaxChars = 140;`
-  - `String? normalizeCheckInNote(String raw)`: thay mọi `\r\n`, `\r`, `\n` bằng dấu cách rồi trim; rỗng thì `null`; dài quá 140 grapheme thì ArgumentError.
-  - `enum Greeting { morning, afternoon, evening }` và `Greeting greetingFor(DateTime localNow)` theo khung giờ ở Q9.
-- **`CheckInScreen`** (StatefulWidget). State gồm: `Mood? mood`, `TextEditingController note`, `bool dirty`, `bool saving`.
-  - Khi `initState` và mỗi lần `today` đổi: nếu `!dirty` thì đọc `getForDate(today)` và điền sẵn mood + note (rồi `dirty = false`). Nếu `dirty` thì giữ nguyên bản nháp.
-  - Bố cục là `Column` gồm hai phần:
-    - `Expanded(SingleChildScrollView(...))`, padding 32 trên và 20 hai bên, khoảng cách 24, gồm:
-      1. Ngày `formatLongDate` (`label`, inkMuted); cách 4; lời chào (`display`).
-      2. "How was today?" (`headline`); cách 12; `MoodPicker`.
-      3. "One line about today" (`headline`); cách 8; `SteadyTextField` (`minLines`/`maxLines` 3, `maxLength` 140, `textInputAction.done`, `FilteringTextInputFormatter.deny(RegExp(r'[\r\n]+'), replacementString: ' ')`); cách 8; bộ đếm `noteCounter` (`caption`, inkMuted, chữ số đều độ rộng, căn phải), đếm bằng `note.text.characters.length`.
-      4. Nếu có chuỗi chính: `SteadyChip` tide, icon `sprout`, nhãn `streakChip(daysClean, name)`.
-    - `Padding(20)` chứa nút primary lg block "Save check-in", đặt **ngoài** vùng cuộn để bàn phím không che. Không dùng `IntrinsicHeight` hay `Spacer` trong vùng cuộn.
-  - Chạm vào nền thì unfocus.
-  - Nút Save bị vô hiệu khi `mood == null` hoặc đang lưu.
-  - Khi lưu:
-    1. `services.today.refresh()` rồi lấy `date = today.value`.
-    2. Gọi `saveForDate`.
-    3. `dirty = false`, unfocus, hiện snackbar `checkInSaved`.
-    4. Nếu lỗi: snackbar `saveError`, giữ nguyên bản nháp.
-    5. Trong `finally` đặt `saving = false`.
+| Phím | Điều kiện | Kết quả |
+|---|---|---|
+| chữ số | đã có '.' và `fractionDigits >= decimals` | giữ nguyên |
+| chữ số | đã có '.' và còn chỗ | thêm vào cuối |
+| chữ số | chưa có '.' và `text == "0"` | thay bằng chữ số đó ("0" rồi "0" vẫn là "0") |
+| chữ số | chưa có '.' và đã đủ 9 chữ số | giữ nguyên |
+| chữ số | còn lại | thêm vào cuối |
+| `.` | `decimals == 0` hoặc đã có '.' | giữ nguyên |
+| `.` | `text` rỗng | thành "0." |
+| `.` | còn lại | thêm vào cuối |
+| `del` | | bỏ ký tự cuối; rỗng thì giữ nguyên |
+
+`fromMinor`:
+- `minor <= 0` thì ra `empty`.
+- `decimals == 0` thì ra "1200".
+- Còn lại thì luôn đủ chữ số thập phân: (1240, 2) ra "12.40"; (5, 2) ra "0.05".
+
+`formatAmountInput`:
+- Rỗng: `m.formatScaled(0, 0)`, ra "$0".
+- Còn lại:
+  - Đặt `k = input.fractionDigits`, rồi lấy `m.formatScaled(input.toMinor(k), k)`.
+  - Ví dụ: "12" ra "$12", "12.4" ra "$12.4", "12.40" ra "$12.40".
+  - Nếu chuỗi nhập kết thúc bằng '.', chèn `m.decimalSeparator` ngay sau chữ số ASCII cuối cùng của chuỗi đã định dạng. Ví dụ "12." ra "$12."; với `de` và EUR thì ra "12, €".
+
+### 5.2 `lib/core/format/money_format.dart` và `formatMonth`
+`core` không import `features`.
+```dart
+class MoneyFormat {
+  factory MoneyFormat(String localeTag, String currencyCode); // cache theo cặp (tag, code)
+  final String currencyCode;
+  int get decimals;              // = decimalsFor(currencyCode)
+  String get decimalSeparator;   // NumberFormat.decimalPattern(numTag).symbols.DECIMAL_SEP
+  String format(int minor);      // = formatScaled(minor, decimals). Ví dụ 1240 ra "$12.40"
+  String formatScaled(int value, int fractionDigits); // value / 10^fractionDigits, đúng fractionDigits chữ số thập phân, kèm ký hiệu
+  static String currencyForLocale(String deviceLocaleTag); // không xác định được thì 'USD'
+  static int decimalsFor(String currencyCode);  // NumberFormat.simpleCurrency(locale: 'en', name: code).decimalDigits ?? 2
+}
+```
+- `numTag = Intl.verifiedLocale(localeTag, NumberFormat.localeExists, onFailure: (_) => 'en')`.
+- `formatScaled` dùng `NumberFormat.simpleCurrency(locale: numTag, name: currencyCode, decimalDigits: fractionDigits)`. Cache `NumberFormat` theo `fractionDigits` trong instance.
+- `format` và `formatScaled` không bao giờ thêm dấu; dấu "−" do `money_labels` thêm.
+- **`currencyForLocale`:**
+  - `v = Intl.verifiedLocale(tag, NumberFormat.localeExists, onFailure: (_) => 'en')`, rồi lấy `NumberFormat.simpleCurrency(locale: v).currencyName ?? 'USD'`.
+  - Ở widget, `tag` lấy từ `WidgetsBinding.instance.platformDispatcher.locale.toString()`, tức vùng của máy, **không** lấy từ `formatLocaleOf`. Lý do: máy `vi_VN` thì `formatLocaleOf` trả 'en', sẽ ra USD sai.
+
+Trong `formatting.dart`, thêm `String formatMonth(LocalDate d, String tag)`: dùng `DateFormat.MMMM(tag)`, cache theo tag như các hàm sẵn có. Kết quả ví dụ "October".
+
+### 5.3 `lib/features/money/money_math.dart`
+```dart
+typedef DateRange = (LocalDate, LocalDate);
+DateRange monthRange(LocalDate d);              // (ngày 1, ngày cuối) của tháng chứa d
+LocalDate previousMonth(LocalDate d);           // ngày 1 của tháng trước
+bool inRange(LocalDate d, DateRange r);         // gồm cả hai đầu
+int totalOf(Iterable<MoneyEntry> entries);      // tổng amountMinor
+
+@immutable
+class CategoryTotal {
+  const CategoryTotal(this.category, this.amount);
+  final MoneyCategory category;
+  final int amount;
+  // ==, hashCode
+}
+/// Chỉ gồm danh mục có tổng > 0. Xếp tổng giảm dần; bằng nhau thì theo thứ tự khai báo enum.
+List<CategoryTotal> totalsByCategory(Iterable<MoneyEntry> entries);
+
+@immutable
+class DayGroup {
+  const DayGroup(this.date, this.entries);
+  final LocalDate date;
+  final List<MoneyEntry> entries;
+  int get total;                                // totalOf(entries)
+}
+/// Giữ thứ tự đầu vào, gom các dòng liền nhau cùng date.
+List<DayGroup> groupByDay(List<MoneyEntry> sorted);
+```
+- `LocalDate(y, 0, 1)` ném lỗi, nên `previousMonth` phải tự xử lý tháng 1: tháng 1 thì ra ngày 1 tháng 12 năm trước.
+- Ngày cuối tháng: `DateTime.utc(y, m + 1, 0).day`.
+
+### 5.4 `lib/features/money/money_labels.dart` (hàm, không có widget)
+```dart
+String categoryLabel(AppLocalizations l10n, MoneyCategory c);
+String categoryIcon(MoneyCategory c);
+String expenseAmount(AppLocalizations l10n, MoneyFormat m, int minor); // = l10n.amountExpense(m.format(minor))
+String entryTitle(AppLocalizations l10n, MoneyEntry e);
+String? entryDetail(AppLocalizations l10n, MoneyEntry e, {required String tag, required bool use24h});
+String dayHeader(AppLocalizations l10n, LocalDate d, LocalDate today, String tag);
+String dateLabel(AppLocalizations l10n, LocalDate d, LocalDate today, String tag);
+```
+
+Bảng danh mục:
+
+| Danh mục | Nhãn | Icon |
+|---|---|---|
+| groceries | catGroceries | `shopping-cart` |
+| eatingOut | catEatingOut | `coffee` |
+| transport | catTransport | `car` |
+| bills | catBills | `zap` |
+| shopping | catShopping | `shirt` |
+| health | catHealth | `heart-pulse` |
+| gifts | catGifts | `gift` |
+| housing | catHousing | `house` |
+| travel | catTravel | `plane` |
+| phone | catPhone | `smartphone` |
+| education | catEducation | `graduation-cap` |
+| other | catOther | `receipt` |
+
+Quy tắc của các hàm:
+- **`entryTitle`:** có ghi chú thì là ghi chú; không có thì là nhãn danh mục.
+- **`entryDetail`:**
+  - `time = formatClockTime(createdAt, tag, use24h: use24h)`. Chỉ có `time` khi `LocalDate.fromDateTime(createdAt) == date`.
+  - Có ghi chú và có time: `l10n.entryDetailLine(category, time)`.
+  - Có ghi chú, không có time: nhãn danh mục.
+  - Không ghi chú, có time: `time`.
+  - Không ghi chú, không có time: `null`.
+- **`dayHeader`:** `dayToday` cho hôm nay, `dayYesterday` cho hôm qua. Ngày khác thì `formatShortDate(d, today, tag).toUpperCase()`, ví dụ "OCT 1" hoặc "DEC 31, 2025".
+- **`dateLabel`:** `dateToday`, `dateYesterday`; ngày khác thì `formatShortDate(d, today, tag)`.
 
 ---
 
-## 7. Copy (`lib/l10n/app_en.arb`)
+## 6. Component mới (`lib/ui/components/`)
 
-Mọi chữ phải theo `design/steady-ds/README.md`, mục "Giọng văn". MỚI = chưa có trong thiết kế (Q10).
+Nguồn hình dáng:
+- `design/steady-ds/components/{IconTile,Keypad,TransactionRow}/README.md`.
+- `bundle.css` (`.st-itile`, `.st-keypad`/`.st-key`, `.st-listrow`/`.st-txn`) và `bundle.js`.
+- Phần `<figure>` "Spending by category" trong `design/mockups/money/Report.dc.html`, cho `BarChartRow`.
+
+Quy ước:
+- Code mẫu để chép quy ước: `steady_segmented_control.dart` (Semantics của mục chọn một, vùng chạm 48), `steady_icon_button.dart`, `steady_stepper.dart` (hàng nền `surface`, viền dưới `line`, tham số `divider`), `steady_progress_bar.dart` (vẽ thanh).
+- Tên không có tiền tố `Steady`, vì không trùng widget nào của Material (cùng kiểu với `TimerRing`, `StreakCard`).
+
+**`SteadyIcons`** thêm 15 hằng sau. Mọi file đều đã có trong `assets/icons/`.
+- `lock`, `calendar`, `delete`, `receipt`.
+- `shoppingCart`, `coffee`, `car`, `zap`, `shirt`, `heartPulse`, `gift`, `house`, `plane`, `smartphone`, `graduationCap`.
+- Giá trị là tên file kebab-case, ví dụ `'shopping-cart'`.
+- `plus`, `x`, `notebookPen` đã có sẵn.
+
+### `IconTile` (`icon_tile.dart`)
+```dart
+IconTile({required String icon, required String label, required bool? selected, required VoidCallback onTap})
+```
+- **`selected`:**
+  - `null` là ô hành động (ô "More"). Semantics chỉ có `button` và `label`.
+  - Khác `null`: Semantics có `button`, `selected`, `inMutuallyExclusiveGroup`, `label`, `onTap`, `excludeSemantics`, giống `_SegmentItem`.
+- **Vùng chạm:** cả ô, bằng `Material(transparent)` + `InkWell(borderRadius md)`. Rộng bằng ràng buộc cha.
+- **Bố cục:** `Column(center)`, đệm dọc `s2`.
+  - Đĩa tròn 64. Thường: nền `surface`, icon 26 màu `ink`. Đang chọn: nền `amberSoft`, viền trong 2px `amber`, icon `amber`.
+  - Cách `s2`.
+  - Nhãn: `caption`, căn giữa, `maxLines: 2`, ellipsis. Thường màu `inkMuted`, đang chọn màu `ink`.
+
+### `Keypad` (`keypad.dart`)
+```dart
+Keypad({required ValueChanged<String> onKey, required String decimalSeparator,
+        required String semanticLabel, required String deleteLabel, bool decimalEnabled = true})
+```
+- Bọc ngoài bằng `Semantics(container: true, label: semanticLabel)`.
+- 4 hàng × 3 cột theo thứ tự `1 2 3 / 4 5 6 / 7 8 9 / . 0 del`. Hàng và cột cách nhau `s2`; các phím `Expanded`.
+- **Phím:** cao 56, bo `md`, nền `surface`.
+  - Chữ: Figtree 24/28 w500 (`SteadyText.headline.copyWith(fontSize: 24, height: 28 / 24, fontWeight: w500, fontVariations: [FontVariation('wght', 500)])`), màu `ink`, bọc `FittedBox(scaleDown)`.
+  - Mỗi phím: `Semantics(button, label, onTap, excludeSemantics)`.
+- **Phím '.':** hiển thị `decimalSeparator` nhưng gửi `'.'`. Khi `!decimalEnabled` thì `Opacity 0.4`, `onTap` null, Semantics `enabled: false`.
+- **Phím `del`:** nền trong suốt, icon `delete` 24 màu `inkMuted`, nhãn semantics `deleteLabel`, gửi `'del'`.
+
+### `TransactionRow` (`transaction_row.dart`)
+```dart
+TransactionRow({required String icon, required String title, String? detail, required String amount,
+                VoidCallback? onTap, bool divider = true})
+```
+Không có tham số `kind`: chỉ có khoản chi.
+- **Khung:** `MergeSemantics` > `Material(surface)` > `InkWell(onTap)` > hàng cao tối thiểu 64, đệm 12/16. Nếu `divider` thì viền dưới 1px màu `line`.
+- **Nội dung hàng:**
+  - Đĩa 40 nền `surface2`, icon 20 màu `ink`.
+  - Cách `s3`, rồi `Expanded` cột chữ: `title` (`body`, `ink`) và `detail` (`label`, `inkMuted`). Cả hai `maxLines: 1`, ellipsis.
+  - Cách `s3`, rồi số tiền: `bodyStrong`, chữ số đều độ rộng (`FontFeature.tabularFigures()`), `maxLines: 1`, màu `ink`.
+- **Chống tràn:** số tiền bọc `ConstrainedBox(maxWidth: 50% bề rộng hàng)` (lấy qua `LayoutBuilder`) + `FittedBox(scaleDown, centerRight)`.
+
+### `BarChartRow` (`bar_chart_row.dart`)
+```dart
+BarChartRow({required String label, required String value, required double fraction})
+```
+- Bọc `MergeSemantics`. Thanh chỉ để trang trí, không có semantics riêng.
+- `Column(stretch)`:
+  - `Text(label)`: `label`, `ink`, `maxLines: 1`, ellipsis.
+  - Cách `s1`.
+  - `LayoutBuilder`. Đặt `w = maxWidth`, `reserve = w / 3`, `maxBar = w − reserve − s2`, `f = fraction` (NaN thì 0, kẹp vào [0, 1]).
+  - `bar = f == 0 ? 0 : max(4, maxBar × f)`.
+  - `Row(crossAxisAlignment: center)` gồm:
+    - Thanh: rộng `bar`, cao 12, màu `amber`, `BorderRadius.horizontal(right: Radius.circular(4))` (theo mockup Report).
+    - Cách `s2`.
+    - `Expanded(Align(centerLeft, FittedBox(scaleDown, Text(value))))`: `label`, chữ số đều độ rộng, `ink`, `maxLines: 1`.
+- Nhãn số luôn nằm ngay sau đầu thanh. Thanh dài nhất vẫn chừa đủ `reserve` cho nhãn số.
+
+---
+
+## 7. Màn hình (`lib/features/money/`)
+
+Quy ước chung:
+- Lấy `Navigator`/`l10n` trước `await` và kiểm `mounted` sau mỗi `await`.
+- Đồng hồ chỉ lấy qua `services.clock`; ngày qua `services.today`.
+- `MoneyFormat` tạo trong `build` bằng `MoneyFormat(formatLocaleOf(context), currency)`.
+
+### 7.1 `MoneyScreen({required bool isActive})`
+- **Mở lần đầu:** chép cách `TimerScreen` dùng `_opened`. Trước lần đầu `isActive == true` thì trả `SizedBox.shrink()` và không mở stream nào.
+- Khi đã mở thì dựng widget private `_MoneyHome` (stateful, cùng file).
+- **`initState` của `_MoneyHome`:**
+  - Gọi `prefs.loadCurrency(fallback: MoneyFormat.currencyForLocale(<vùng của máy>))`.
+  - Nghe `watchRecent()`.
+  - Nghe `watchBetween(previousMonth(today), monthRange(today).$2)`: một stream cho cả tháng trước và tháng này.
+  - Nghe `services.today` và gọi `setState` mỗi khi ngày đổi. Nếu tháng cũng đổi thì huỷ stream hai tháng, đặt danh sách về `null`, rồi nghe khoảng mới.
+  - Lỗi stream thì đặt `_loadFailed = true`, **không** nuốt lỗi.
+  - Huỷ mọi thứ trong `dispose`.
+- **Số liệu tính trong `build`:**
+  - `thisMonth` là các dòng có `inRange(date, monthRange(today))`.
+  - `lastMonth` là các dòng có `inRange(date, monthRange(previousMonth(today)))`.
+  - `spent = totalOf(thisMonth)`, `last = totalOf(lastMonth)`, `cats = totalsByCategory(thisMonth)`.
+- **Vùng cuộn** (`SingleChildScrollView`, đệm LTRB 20/32/20/24, `Column(stretch)`):
+  1. `Text(tabMoney, display, ink)`. Phần này luôn hiện.
+  2. Nếu `_loadFailed`: `s4` + `SteadyInlineStatus(moneyLoadError, error)`. Dừng ở đây.
+  3. Chưa có đủ tiền tệ, danh sách hai tháng và danh sách gần đây: dừng ở đây (không có spinner).
+  4. `s4`, rồi `Wrap(alignment: spaceBetween, crossAxisAlignment: center, spacing/runSpacing s2)` gồm:
+     - `formatMonth(today)` (`label`, `inkMuted`).
+     - `SteadyChip(neutral, icon lock, moneyOffline)`.
+  5. `s4`, rồi:
+     - `spentThisMonth` (`label`, `inkMuted`).
+     - `FittedBox(scaleDown, centerLeft)` chứa `format(spent)` (`moneyXl`, `ink`, `maxLines: 1`).
+     - Chỉ khi `last > 0`: `spentLastMonth(format(last))` (`label`, `inkMuted`).
+  6. `s4`, rồi `SteadyButton(primary, lg, block, icon plus, addExpense)`. Bấm thì push `EntryEditorScreen(currency: …)` bằng `MaterialPageRoute`. Route phủ cả thanh tab.
+  7. Chỉ khi `cats` khác rỗng:
+     - `s6`, `Text(byCategoryHeader, overline, inkMuted)`, rồi `s2`.
+     - Khung nền `surface`, bo `lg`, đệm `s4`. Bên trong là `Column` các `BarChartRow`, cách nhau `s3`.
+     - Mỗi `BarChartRow` có `label: categoryLabel`, `value: format(amount)`, `fraction: amount / cats.first.amount`.
+  8. `s6`, rồi `Row`:
+     - `Expanded(Text(recentHeader, overline, inkMuted))`.
+     - Nếu có dòng nào: `SteadyButton(ghost, md, seeAll)`, bấm thì push `EntriesScreen(currency: …)`.
+  9. `s2`, rồi một trong hai:
+     - Chưa có dòng: `Text(moneyEmpty, body, inkMuted)`.
+     - Có dòng: `ClipRRect(lg)` + `Column` các `EntryRow`. Dòng cuối `divider: false`. Chạm thì `showEntryActionsSheet`.
+- **Tự kiểm fake-async:** Coder tự kiểm bằng một widget test tạm (xoá trước khi bàn giao) rằng các thao tác sau không treo trong vùng fake-async của widget test:
+  - Mở tab Money lần đầu (lúc này có ghi prefs).
+  - Lưu một khoản.
+  - Xoá một khoản.
+
+  Nếu treo thì ghi rõ vào `thay-doi.md`. Không được bỏ lần ghi prefs để né lỗi.
+
+### 7.2 `EntryEditorScreen({required String currency, MoneyEntry? entry})`
+`entry` khác `null` là chế độ sửa.
+
+**State:**
+- `_amount` (`AmountInput`), `MoneyCategory? _category`, `LocalDate _date`, `String? _note`, `bool _showAll`, `_busy`, `String? _error`.
+- `d = MoneyFormat.decimalsFor(currency)`. Không phụ thuộc `context`, nên dùng được trong `initState`.
+- Khởi tạo:
+  - Có `entry`: lấy từ `entry`, số tiền qua `AmountInput.fromMinor`.
+  - Không có: `empty`, `null`, `today`, `null`.
+  - `_showAll = true` khi danh mục đang chọn không thuộc 7 mục đầu.
+
+**Bố cục** (`Scaffold` > `SafeArea` > `Column`):
+1. **Hàng trên, cố định.** Đệm LTRB 20/12/20/0. `Row` gồm:
+   - `SteadyIconButton(plain, x, close)`, bấm thì `maybePop`.
+   - `s2`, rồi `Expanded(Text(entry == null ? addExpense : editExpense, title, ink, maxLines 1, ellipsis))`.
+2. **`Expanded(SingleChildScrollView)`.** Đệm LTRB 20/12/20/12, các khối cách `s3`:
+   - **Khối số tiền** (căn giữa):
+     - `FittedBox(scaleDown)` chứa `formatAmountInput(money, _amount)` (`moneyXl`, `ink`), bọc `Semantics(liveRegion: true)`.
+     - Cách `s1`, rồi nhãn danh mục, hoặc `chooseCategory` khi chưa chọn (`label`, `inkMuted`).
+   - **Lưới danh mục:**
+     - Bọc `Semantics(container, label: categoryLabel)`.
+     - `LayoutBuilder` tính bề rộng ô = (maxWidth − 3·`s1`)/4, rồi `Wrap(spacing/runSpacing s1)` các `IconTile`.
+     - Khi `!_showAll`: 7 mục đầu, cộng ô `IconTile(plus, categoryMore, selected: null)`. Bấm ô này thì `_showAll = true`.
+     - Khi `_showAll`: cả 12 mục.
+   - **Hàng hai nút** (`Row`, hai `Expanded` cách nhau `s2`, cả hai là secondary `md`):
+     - Icon `calendar`, nhãn `dateLabel(_date)`. Nhãn dựng lại khi `today` đổi (`ValueListenableBuilder`).
+     - Icon `notebookPen`, nhãn là `_note ?? noteButton`.
+3. **Vùng dưới, cố định.** Đệm LTRB 20/12/20/24, gồm lần lượt:
+   - `Keypad(decimalEnabled: d > 0, decimalSeparator: money.decimalSeparator, semanticLabel: keypadLabel, deleteLabel: keypadBackspace)`.
+   - `s3`.
+   - Nếu có `_error`: `SteadyInlineStatus(error)` + `s3`.
+   - Nút primary block `saveExpense`.
+
+**Hành vi:**
+- **Phím:** `_amount = _amount.press(key, decimals: d)` và xoá `_error`.
+- **Chọn danh mục:** đặt `_category` và xoá `_error`.
+- **Chọn ngày:** `showDatePicker`, theo mẫu ở `add_habit_sheet.dart`:
+  - `firstDate: DateTime(today.year - 100)`.
+  - `lastDate`: ngày lớn hơn trong hai ngày `today` và `_date`.
+  - `initialDate: _date`.
+- **Ghi chú:** `result = await showNoteSheet(context, initial: _note)`. Khác `null` thì `_note = normalizeMoneyNote(result)`.
+- **Nút Save** bật khi `!_busy && _category != null && _amount.toMinor(d) > 0`.
+- **`_save`:**
+  1. Dòng đầu: `if (_busy) return;`.
+  2. `_busy = true; _error = null`.
+  3. Gọi `add` hoặc `update`. `update` trả `false` thì coi là lỗi.
+  4. Thành công: pop route.
+  5. Lỗi: `_error = saveError`; giữ nguyên mọi giá trị đang nhập.
+  6. `finally`: nếu còn `mounted` thì `_busy = false`.
+- X và Back đóng màn hình, không hỏi lại.
+
+**Bắt buộc:** ở 360×800 với cỡ chữ 1.0, không cần cuộn vẫn thấy cả bốn khối: số tiền, hai hàng danh mục, hàng Date/Note, Keypad cùng nút Save. Ước tính: hàng trên 60, vùng cuộn 376 trên khoảng 400 px, vùng dưới khoảng 340.
+
+### 7.3 `note_sheet.dart`
+```dart
+Future<String?> showNoteSheet(BuildContext context, {String? initial});
+```
+- Dùng `showSteadySheet`, chứa widget private có `TextEditingController` (nhớ dispose).
+- Bố cục:
+  - `Text(noteButton, title, ink)`, cách `s4`.
+  - `SteadyTextField(hint: noteHint, maxLength: kMoneyNoteMaxChars, autofocus: true, textInputAction: done)`, cách `s4`.
+  - Nút primary block `done`, bấm thì `pop(controller.text)`.
+- Đóng sheet bằng cách khác thì trả `null`, nên ghi chú không đổi. Trả chuỗi rỗng nghĩa là xoá ghi chú.
+
+### 7.4 `EntriesScreen({required String currency})`
+- Nghe `watchAll()`. Lỗi thì hiện `moneyLoadError`.
+- **Bố cục:** `Scaffold` > `SafeArea` > `Column` gồm:
+  - Hàng trên (đệm LTRB 20/12/20/0): `SteadyIconButton(plain, x, close)`, `s2`, `Expanded(Text(expensesTitle, title, ink, maxLines 1))`.
+  - `s4`, rồi `Expanded`:
+    - Không có dòng nào: `Text(moneyEmpty)`, đệm ngang 20.
+    - Có dữ liệu: `ListView.builder` (đệm LTRB 20/0/20/24). Mỗi item là một `DayGroup`; các nhóm cách nhau `s4`.
+- **Mỗi nhóm:**
+  - Hàng đầu: `Expanded(Text(dayHeader, overline, inkMuted))` và `Text(expenseAmount(group.total), label, inkMuted, chữ số đều độ rộng)`.
+  - Cách `s2`, rồi `ClipRRect(lg)` + `Column` các `EntryRow`. Chạm thì mở sheet hành động.
+- Nhãn ngày dựng lại khi `today` đổi.
+
+### 7.5 `entry_actions_sheet.dart`
+```dart
+Future<void> showEntryActionsSheet(BuildContext context, {required MoneyEntry entry, required String currency});
+```
+Chép khung từ `lib/features/streaks/habit_actions_sheet.dart`.
+- **Nội dung:**
+  - `entryTitle` (`title`, `maxLines: 2`).
+  - `s1`, rồi `expenseAmount(entry.amountMinor)` (`label`, `inkMuted`).
+  - `s4`, rồi dòng lỗi nếu có.
+  - Nút secondary `md` block `editExpense`, cách `s3`, rồi nút danger `md` block `deleteExpense`.
+- **Edit:** lấy `navigator` trước, `navigator.pop()` để đóng sheet, rồi `navigator.push(EntryEditorScreen(currency: …, entry: entry))`.
+- **Delete:** theo mẫu `_end` trong `fasting_view.dart`.
+  1. `if (_busy) return;`, rồi `_busy = true` trước hộp thoại.
+  2. `showSteadyConfirmDialog(title: deleteExpenseTitle, body: deleteExpenseBody, confirmLabel: delete, cancelLabel: cancel)`, để mặc định `destructive`.
+  3. Huỷ: dừng.
+  4. Xác nhận: `money.delete(id)`, rồi pop sheet. Kết quả `false` (dòng đã mất) cũng pop.
+  5. Lỗi: `_error = saveError`, sheet vẫn mở.
+  6. `finally`: `_busy = false`.
+
+### 7.6 `EntryRow({required MoneyEntry entry, required MoneyFormat money, VoidCallback? onTap, bool divider = true})`
+Dựng `TransactionRow` với:
+- `icon`: `categoryIcon`.
+- `title`: `entryTitle`.
+- `detail`: `entryDetail`, trong đó `use24h = MediaQuery.alwaysUse24HourFormatOf`.
+- `amount`: `expenseAmount(entry.amountMinor)`.
+
+---
+
+## 8. Câu chữ (`lib/l10n/app_en.arb`)
+
+Bám mục "Giọng văn" trong `design/steady-ds/README.md`.
+- Mọi placeholder số tiền, ngày, giờ, nhãn đều khai báo `String` (mẫu: `@streakSince`).
+- Dùng lại các key có sẵn: `tabMoney`, `close`, `delete`, `cancel`, `saveError`.
+- MỚI = chưa có trong thiết kế.
 
 | key | text |
 |---|---|
-| tabFocus / tabTimer / tabStreaks / tabMoney / tabCheckIn | Focus / Timer / Streaks / Money / Check-in |
-| placeholderBody (MỚI) | This part of Steady isn't ready yet. |
-| addHabit | Add habit |
-| streaksEmpty (MỚI) | Add a habit you want to leave behind. |
-| streakDayUnit | `{count, plural, =1{day} other{days}}` |
-| streakSince | Since {date} |
-| milestoneNext | `Next: {target, plural, =1{1 day} other{{target} days}} · {remaining} to go` |
-| habitNameLabel (MỚI) / habitNameHint | Habit / No sugar |
-| cleanSinceLabel (MỚI) / saveHabit (MỚI) | Clean since / Save habit |
-| resetStreak / resetDone | Reset streak / That's okay. Day 1 starts now. |
-| deleteHabit (MỚI) | Delete habit |
-| deleteHabitTitle (MỚI) | Delete {habit}? |
-| deleteHabitBody (MỚI) | This removes the habit and its count. It can't be undone. |
-| cancel (MỚI) / delete (MỚI) | Cancel / Delete |
-| greetingMorning (MỚI) / greetingAfternoon (MỚI) / greetingEvening | Good morning / Good afternoon / Good evening |
-| howWasToday | How was today? |
-| moodAwful … moodGreat | Awful / Low / Okay / Good / Great |
-| noteLabel | One line about today |
-| noteCounter | {count} / {max} |
-| saveCheckIn | Save check-in |
-| checkInSaved (MỚI) | Check-in saved. |
-| saveError (MỚI) | Couldn't save. Try again. |
-| streakChip | Day {count} · {habit} |
+| moneyOffline | Offline · no bank link |
+| spentThisMonth (MỚI) | Spent this month |
+| spentLastMonth (MỚI) | Last month: {amount} |
+| addExpense (MỚI) / editExpense (MỚI) | Add expense / Edit expense |
+| byCategoryHeader (MỚI) | BY CATEGORY |
+| recentHeader / seeAll | RECENT / See all |
+| moneyEmpty (MỚI) | Your expenses will show up here. |
+| moneyLoadError (MỚI) | Couldn't load your expenses. |
+| expensesTitle (MỚI, thay "Transactions") | Expenses |
+| dayToday / dayYesterday | TODAY / YESTERDAY |
+| categoryLabel / chooseCategory (MỚI) / categoryMore | Category / Choose a category / More |
+| catGroceries / catEatingOut / catTransport / catBills | Groceries / Eating out / Transport / Bills |
+| catShopping / catHealth / catGifts | Shopping / Health / Gifts |
+| catHousing / catTravel / catPhone / catEducation / catOther (MỚI) | Housing / Travel / Phone / Education / Other |
+| dateToday / dateYesterday | Today / Yesterday |
+| noteButton / noteHint (MỚI) / done (MỚI) | Note / What was it for? / Done |
+| keypadLabel / keypadBackspace (MỚI) | Amount keypad / Delete last digit |
+| saveExpense | Save expense |
+| entryDetailLine (MỚI) | {category} · {time} |
+| amountExpense | −{amount} |
+| deleteExpense (MỚI) | Delete expense |
+| deleteExpenseTitle (MỚI) / deleteExpenseBody (MỚI) | Delete this expense? / This removes it from your history. It can't be undone. |
 
-Placeholder dạng số (`count`, `target`, `remaining`, `max`) khai báo kiểu `int`.
-
----
-
-## 8. Trường hợp biên bắt buộc xử lý
-
-1. **Giờ mùa hè (DST) và múi giờ:** đếm ngày chỉ bằng `LocalDate.epochDay`. Không dùng `Duration.inDays` giữa hai `DateTime` theo giờ máy.
-2. Ngày bắt đầu nằm ở tương lai (ví dụ đồng hồ máy bị chỉnh lùi) thì `daysClean` trả 0, không ra số âm. `addHabit` từ chối ngày tương lai.
-3. App mở xuyên qua nửa đêm, hoặc quay lại từ nền: số ngày, lời chào và ngày của Check-in phải tự cập nhật (`TodayNotifier`).
-4. `LocalDate.parse` từ chối `2026-02-30`, `2026-13-01`, `26-1-1` và chuỗi rỗng. Năm nhuận tính đúng.
-5. Giới hạn 40 và 140 đếm theo **grapheme**: emoji ghép và tiếng Việt tổ hợp đều tính là 1 ký tự.
-6. Chuỗi chỉ có khoảng trắng coi là rỗng. Ghi chú có xuống dòng (kể cả khi dán vào) thì đổi thành dấu cách. Tên thói quen không được có xuống dòng.
-7. Không có lỗi overflow ở màn 360×800 với text scale 1.0 và 2.0 (tên dài, `countXl`, chip, nút, tab bar, MoodPicker).
-8. Lưu Check-in hai lần trong cùng ngày, hoặc bấm Save liên tiếp, thì chỉ có một bản ghi.
-9. Mood ngoài 1–5 bị chặn ở cả Dart lẫn ràng buộc CHECK của DB.
-10. Ghi DB lỗi thì hiện snackbar `saveError` và không mất dữ liệu đang nhập.
-11. Xoá phải qua xác nhận; bấm Cancel hoặc chạm ra ngoài thì không xoá. Reset hoặc xoá một id không tồn tại thì không crash.
-12. Bản nháp Check-in còn nguyên khi chuyển tab. Sang ngày mới mà đang có bản nháp thì không ghi đè bản nháp.
-13. Nút Back của Android: đóng sheet/dialog trước; đang ở tab khác Focus thì về Focus; đang ở Focus thì thoát app.
-14. Bàn phím không che nút Save.
-15. Không có snackbar nào gọi bằng `context` đã unmount.
-16. Không chớp nền trắng lúc khởi động. Sheet và dialog không bị ám màu amber.
-17. Vùng chạm ít nhất 48dp. Ngoài ra số ít/số nhiều phải đúng ("1 day" / "2 days"); không có thói quen nào thì không hiện chip trên Check-in.
+`amountExpense` dùng dấu trừ U+2212, không dùng gạch nối.
 
 ---
 
-## 9. Test
+## 9. Trường hợp biên bắt buộc xử lý
 
-**Coder viết:**
-- `test/helpers/test_app.dart`:
-  - `Future<AppServices> pumpSteadyApp(WidgetTester t, {required Clock clock, Size size = const Size(360, 800), double textScale = 1.0})`:
-    - Dùng `AppDatabase(NativeDatabase.memory())`; **không dùng** `createInBackground`.
-    - Đặt `t.view.physicalSize`, `devicePixelRatio = 1`, `t.platformDispatcher.textScaleFactorTestValue`, và `addTearDown` để reset.
-    - Đặt `driftRuntimeOptions.dontWarnAboutMultipleDatabases = true`.
-  - `Future<void> disposeSteadyApp(WidgetTester t, AppServices s)` làm theo thứ tự: `pumpWidget(SizedBox.shrink())`, `pump(Duration.zero)`, `s.dispose()`. Gọi hàm này ở cuối mỗi widget test để tránh lỗi "A Timer is still pending" của stream Drift.
-  - Đồng hồ giả trong test: `var now = DateTime(2026, 10, 2, 21); final clock = Clock(() => now);`
-- `test/app_smoke_test.dart`: app khởi động, thấy đủ 5 nhãn tab, không có exception.
-
-**Tester viết** (theo mặc định A ở Q5; nếu người dùng chọn B thì các số ngày cộng thêm 1):
-- **LocalDate:** parse hợp lệ và các chuỗi sai ở biên 4; `2028-02-28` → `2028-03-01` = 2; qua mốc DST (`2026-03-08`→`09`, `2026-11-01`→`02`) = 1; `fromDateTime` lúc 23:59:59 và 00:00:00.
-- **streak_math:** `daysClean` cho hôm nay = 0, hôm qua = 1, ngày tương lai = 0. `nextMilestone(0)` = (1, 1, 0.0); `(7)` = (14, 7, 0.0); `(127)` = (180, 53, 37/90); `(364)` = (365, 1, …); `(365)` và `(1000)` = null.
-- **habit_name và note:** trim; rỗng hoặc chỉ khoảng trắng → null; 40 grapheme có emoji `👨‍👩‍👧` vẫn hợp lệ, 41 thì không; 140 và 141 với ghi chú; xuống dòng; `Mood.fromValue(0)` và `(6)` ném lỗi; `greetingFor` lúc 04:59, 05:00, 11:59, 12:00, 17:59, 18:00.
-- **formatting:** (en, en_GB) → `en_GB`; (en, de_DE) → `en`; `formatShortDate` cùng năm → "May 28", khác năm → "May 28, 2025"; `formatLongDate(2026-10-02)` → "Friday, October 2".
-- **Repository** (Drift in-memory): thứ tự sắp xếp; reset, delete, và id không tồn tại → false; `addHabit` với tên rỗng hoặc ngày tương lai → ArgumentError (**đây là case bắt buộc phải thất bại**); lưu Check-in hai lần cùng ngày → còn 1 dòng với giá trị mới; khác ngày → 2 dòng; chèn mood 6 bằng SQL thô bị DB từ chối.
-- **Widget** (clock 2026-10-02 21:00, thói quen "No smoking" bắt đầu 2026-05-28):
-  - Thẻ lớn hiện "127", "Since May 28", "Next: 180 days · 53 to go".
-  - Thêm thói quen qua sheet; Save bị vô hiệu khi tên rỗng.
-  - Reset thì số về 0 và có snackbar `resetDone`. Delete → Cancel thì còn, Delete → Delete thì mất.
-  - Đổi `now` sang ngày hôm sau rồi gọi `today.refresh()` thì số ngày +1.
-  - Check-in: thấy "Friday, October 2" và "Good evening"; Save bị vô hiệu khi chưa chọn mood; gõ 150 ký tự thì chỉ giữ 140 và bộ đếm hiện "140 / 140"; lưu xong pump lại app thì mood và note được điền sẵn; chip hiện "Day 127 · No smoking"; không có thói quen thì không có chip.
-  - Bản nháp còn nguyên sau khi chuyển tab rồi quay lại. Back ở tab Streaks thì về tab Focus.
-  - Streaks và Check-in không có exception overflow ở text scale 2.0.
-- **Đồng bộ token:** đọc `design/steady-ds/tokens.json`; mọi màu của 3 theme khớp `SteadyColors`; mọi kiểu chữ khớp `fontSize`, `height`, `weight` trong `SteadyText`.
-- **Icon:** mỗi hằng trong `SteadyIcons` có file `assets/icons/<tên>.svg` tương ứng.
-
-**Tiêu chí xong:**
-- Mọi lệnh ở mục 2.3 trả mã 0, và `flutter analyze` báo "No issues found".
-- `grep -rn "DateTime.now()" lib` không ra kết quả.
-- `grep -rn "Color(0x" lib` chỉ ra kết quả trong `lib/core/theme/tokens.dart`.
+1. **Migration:** v1 lên v3 và v2 lên v3 giữ nguyên mọi dòng `habits`, `check_ins`, `fasts`, `prefs`. DB mới tạo thẳng ở v3, `user_version` = 3.
+2. **Số tiền:**
+   - Đúng mọi dòng trong bảng `press` ở §5.1.
+   - "0.00" hay rỗng thì Save tắt.
+   - Tiền tệ không có chữ số thập phân (JPY) thì phím '.' bị tắt.
+   - Số lớn nhất nhập được là 999,999,999.99 (USD), không tràn bố cục ở mọi màn.
+3. **Bấm Save hai lần** trước khung hình kế tiếp: chỉ tạo đúng một dòng, không hiện dòng lỗi.
+4. **Ghi DB lỗi** khi lưu hoặc xoá: dòng lỗi hiện ngay tại chỗ, giá trị đang nhập còn nguyên, màn hoặc sheet không đóng.
+5. **Tháng:**
+   - Tổng tháng gồm cả ngày 1 và ngày cuối tháng. Khoản của tháng khác không vào tổng, nhưng vẫn hiện ở RECENT và Expenses.
+   - Tháng 1 thì "Last month" là tháng 12 năm trước. Tháng 2 năm nhuận có 29 ngày.
+   - Qua nửa đêm sang tháng mới khi app đang mở: "Spent this month" về 0, nhãn tháng đổi, "Last month" thành tổng của tháng vừa hết, BY CATEGORY ẩn.
+6. **BY CATEGORY:**
+   - Chỉ có danh mục có chi trong tháng này. Xếp từ lớn tới nhỏ; bằng nhau thì theo thứ tự danh mục ở §5.4.
+   - Thanh lớn nhất dài đúng `maxBar`. Khoản rất nhỏ so với thanh lớn nhất vẫn có thanh rộng 4.
+   - Đủ 12 danh mục với số tiền lớn nhất, ở cỡ chữ 2.0, vẫn không tràn.
+   - Tháng này chưa chi gì thì ẩn cả mục.
+7. **Dòng "Last month"** ẩn khi tổng tháng trước bằng 0.
+8. **Chọn ngày:** không chọn được ngày sau hôm nay. Sửa một khoản có ngày sau hôm nay (đồng hồ máy bị lùi) không làm crash `showDatePicker`.
+9. **Giờ ở dòng chi tiết** chỉ hiện khi khoản được tạo đúng vào ngày của nó. Sửa khoản không đổi `createdAt`. Máy đặt giờ 24h thì hiện "21:00".
+10. **Nhóm theo ngày:** tiêu đề lần lượt là TODAY, YESTERDAY, "SEP 30", và "DEC 31, 2025" với năm khác. Tổng ngày bằng tổng các dòng, có dấu "−".
+11. **Tiền tệ:**
+    - Lưu một lần rồi cố định. Đổi vùng của máy về sau không đổi ký hiệu.
+    - Giá trị trong prefs hỏng thì dùng tiền tệ theo vùng và ghi đè.
+12. **Stream:** trước khi mở tab Money lần đầu thì không có stream Money nào chạy. Sau `dispose` không còn subscription nào.
+13. **Bố cục:**
+    - Không overflow ở 360×800 với cỡ chữ 1.0 và 2.0, cho mọi màn:
+      - tab Money: rỗng; có dòng; số tiền lớn nhất; ghi chú 60 ký tự; đủ 12 thanh BY CATEGORY;
+      - màn nhập: chưa mở và đã mở More;
+      - Expenses, sheet hành động, sheet ghi chú với bàn phím 300 px.
+    - Mọi vùng chạm (phím, ô danh mục, nút, dòng) tối thiểu 48dp.
+    - Đúng ràng buộc "không cần cuộn" ở cuối §7.2.
+14. **Màu:** mọi số tiền màu `ink`. Tab Money không dùng `tide`. `rose` chỉ có ở nút "Delete expense" và nút Delete trong hộp thoại.
 
 ---
 
-## 10. Quy ước và file để bám theo
+## 10. Test
 
-- **Dart:** `dart format`; lint theo `analysis_options.yaml` do `flutter create` sinh (flutter_lints); tên file snake_case, mỗi file một widget public. Component trùng tên với Material thì thêm tiền tố `Steady`; `StreakCard` và `MoodPicker` giữ tên như trong design system.
-- **Giọng văn, màu, chữ, khoảng cách, trạng thái:** `design/steady-ds/README.md`.
-- **Giá trị token:** `design/steady-ds/tokens.json`.
-- **Hình dáng component:** `design/steady-ds/components/{Button,Chip,ProgressBar,StreakCard,MoodPicker,TabBar,Icon}/README.md` và `design/steady-ds/components/bundle.css` (class `.st-btn`, `.st-chip`, `.st-bar`, `.st-streak`, `.st-mood`, `.st-tabbar`, `.st-tab`). `bundle.js` chỉ để tham chiếu; không chép code React.
-- **Bố cục màn hình:** `design/mockups/steady/Streaks.dc.html` và `design/mockups/steady/CheckIn.dc.html` (bỏ qua TabBar 4 tab trong đó).
-- **Xử lý lỗi:** repository ném `ArgumentError` khi đầu vào sai; UI kiểm tra trước để không bao giờ gửi đầu vào sai xuống.
+### 10.1 Mốc hiện tại
+`flutter analyze` sạch. `flutter test`: **+722, 0 rớt** ở cả múi giờ mặc định lẫn `TZ=America/New_York`.
+
+### 10.2 Test cũ sẽ đỏ vì đặc tả đổi (chỉ những test này, sau khi Coder xong)
+- `test/widget/shell_navigation_test.dart`: "Focus and Money show the placeholder".
+- `test/data/migration_test.dart`: có thể đỏ cả 8 test vì schema lên v3:
+  - "the app database is at version 2"
+  - "the generated helper knows both versions"
+  - "the migrated schema is exactly the v2 schema"
+  - "every habit and check-in row of v1 is kept as it was"
+  - "the two new tables are there, empty and usable"
+  - "an empty v1 database migrates too"
+  - "is created straight at v2 with the same schema as the migration"
+  - "has all four tables and starts empty"
+
+Test nào khác rớt thì Coder phải sửa `lib/`, không được để lại.
+
+### 10.3 Phân công
+- **Coder:**
+  - Được sửa toàn bộ `lib/`, ARB, `drift_schemas/`, và các file sinh ra trong `test/generated_migrations/`.
+  - Không sửa file test nào khác.
+  - Ghi `.bangiao/thay-doi.md`.
+- **Tester:**
+  - Viết lại các test ở §10.2, viết mới theo §10.5.
+  - Được tạo `test/helpers/money_helpers.dart`, và được thêm nhóm test vào `test/data/prefs_repository_test.dart` và `test/design/assets_and_copy_test.dart`.
+  - Không sửa `lib/`. Thấy lỗi trong `lib/` thì ghi vào `.bangiao/ket-qua-test.md`, không lách.
+  - Không nới kỳ vọng nào của test cũ ngoài §10.2.
+
+### 10.4 Tester sửa test cũ
+
+| Test | Sửa thành |
+|---|---|
+| "Focus and Money show the placeholder" | Đổi thành "Focus shows the placeholder" (chỉ Focus). Thêm "Money is a real screen", chép kiểu test Timer ngay cạnh: sau khi chờ DB (`letDbFinish`) thì có tiêu đề "Money" (`findsNWidgets(2)`), có "Offline · no bank link" và "Add expense", không có placeholder |
+| 8 test của `migration_test.dart` | `versions == [1, 2, 3]`. Kiểm `migrateAndValidate(db, 3)` từ v1 và từ v2. Từ v1: dữ liệu `habits`/`check_ins` còn nguyên. Từ v2: dữ liệu `fasts`/`prefs` còn nguyên (dùng `DatabaseAtV2` trong `schema_v2.dart`). DB mới tạo có đủ 5 bảng và `user_version` = 3. `money_entries` dùng được, và CHECK chặn `amount_minor = 0` |
+
+### 10.5 Tester viết mới
+Theo `test/` hiện có. Widget test dùng `pumpSteadyApp` (`test_app.dart`); `FakeNow`, `evening()`, `dbAction`, `breakWrites` (`widget_helpers.dart`); `letDbFinish`, `textPlain` (`timer_helpers.dart`).
+
+- **Unit:**
+  - `amount_input` (`test/features/amount_input_test.dart`):
+    - Mọi dòng ở bảng §5.1.
+    - `toMinor`: ("12.", 2) ra 1200, ("0.05", 2) ra 5.
+    - `fromMinor`: (1240, 2) ra "12.40", (0, 2) ra rỗng.
+    - `formatAmountInput` với `en_US`/USD: "" ra "$0", "12." ra "$12.", "12.4" ra "$12.4".
+  - `money_format` (`test/core/money_format_test.dart`):
+    - `en_US`/USD: `format` ra "$12.40", "$0.00", "$999,999,999.99".
+    - JPY: `decimalsFor` = 0; `format(1235)` ra "¥1,235".
+    - `de`/EUR: "12,40 €". Intl chèn khoảng trắng không ngắt U+00A0, nên chuẩn hoá trước khi so (dùng `plain` trong `timer_helpers.dart`).
+    - `currencyForLocale`: `en_US` ra USD, `de_DE` ra EUR, `ja_JP` ra JPY, `xx` ra USD.
+    - `formatMonth`.
+  - `money_math` (`test/features/money_math_test.dart`):
+    - `monthRange` cho 2026-10, 2028-02 (năm nhuận) và 2026-12.
+    - `previousMonth` cho 2026-01-15 (ra 2025-12-01) và 2026-03-31 (ra 2026-02-01).
+    - `inRange` ở hai đầu.
+    - `totalOf`.
+    - `totalsByCategory`: thứ tự, bằng nhau thì theo enum, không có mục 0.
+    - `groupByDay` và `total`.
+  - `normalizeMoneyNote`.
+- **Repository** (`test/data/money_repository_test.dart`, `prefs_repository_test.dart`):
+  - `add`, `update`, `delete`; id không có thì trả `false`.
+  - `ArgumentError` khi số tiền 0, số tiền âm, quá `kMaxAmountMinor`, ghi chú 61 ký tự.
+  - Thứ tự sắp xếp. `watchBetween` gồm cả hai đầu. `update` giữ `createdAt`.
+  - `loadCurrency`: chưa có thì ghi fallback; đã có thì giữ dù fallback khác; giá trị hỏng thì ghi đè.
+- **Component** (`test/ui/money_components_test.dart`):
+  - `IconTile`: màu khi chọn; Semantics của ô chọn và ô hành động.
+  - `Keypad`: thứ tự phím, `onKey`, phím '.' bị tắt, nhãn của phím xoá, mỗi phím tối thiểu 48.
+  - `TransactionRow`: số tiền màu `ink`, tiêu đề dài cắt bằng ellipsis, số tiền lớn ở cỡ chữ 2.0 không tràn.
+  - `BarChartRow`:
+    - `fraction` 1 ra thanh rộng `w − w/3 − 8`; 0.5 ra một nửa số đó; 0.001 ra 4; 0 ra 0.
+    - Nhãn số màu `ink`, nằm sau thanh.
+    - Semantics gộp có cả nhãn danh mục và số tiền.
+    - Số lớn ở cỡ chữ 2.0 không tràn.
+- **Widget** (đồng hồ `evening()` = 2026-10-02 21:00; các file `test/widget/money_screen_test.dart`, `money_editor_test.dart`, `money_entries_test.dart`):
+  - **Tab Money rỗng:** có "$0.00" và câu `moneyEmpty`. Không có "See all", "BY CATEGORY", "Last month".
+  - **Thêm khoản chi:**
+    - Bấm "Add expense": thanh tab biến mất, tiêu đề màn là "Add expense".
+    - Bấm 1, 2, ., 4: hiện "$12.4". Save vẫn tắt cho tới khi chọn "Groceries".
+    - Save: quay về tab và thấy tổng "$12.40", dòng "Groceries", chi tiết "9:00 PM", số tiền "−$12.40". BY CATEGORY có "Groceries" kèm "$12.40".
+  - **More:** mở thêm 5 mục.
+  - **Ghi chú:**
+    - Ghi chú thành tiêu đề dòng; chi tiết thành "Groceries · 9:00 PM".
+    - Đóng sheet mà không bấm Done thì ghi chú giữ nguyên.
+  - **Chọn ngày hôm qua:** dòng nằm dưới YESTERDAY và không có giờ.
+  - **Tháng trước:** khoản ngày 2026-09-15 giá $50 không vào tổng tháng, có dòng "Last month: $50.00", và có trong RECENT.
+  - **BY CATEGORY:**
+    - Groceries $320, Bills $210, Eating out $184 hiện theo thứ tự đó từ trên xuống (so `dy`).
+    - Thanh Groceries rộng nhất.
+  - **Qua nửa đêm** 2026-10-31 sang 11-01, làm theo cách các test qua nửa đêm sẵn có:
+    - Tổng về "$0.00", nhãn tháng là "November".
+    - "Last month: …" bằng tổng tháng 10.
+    - BY CATEGORY ẩn.
+  - **Expenses:** tiêu đề ngày và tổng ngày. Ví dụ hôm nay có $48.20 và $4.50 thì tổng là "−$52.70".
+  - **Sửa và xoá:**
+    - Sửa số tiền thì giữ `createdAt`; tiêu đề màn là "Edit expense".
+    - Delete rồi Cancel: dòng còn. Delete rồi xác nhận: dòng mất.
+    - Back đóng hộp thoại trước, rồi tới sheet.
+  - **Ghi lỗi:** `breakWrites(..., 'money_entries')` khi Save hoặc Delete thì hiện dòng lỗi, không có dòng mới nào trong DB, giá trị đang nhập còn nguyên.
+  - **Save gọi hai lần liền:** lấy `SteadyButton` rồi gọi `onPressed!()` hai lần, không `await`, giống vòng S3. Kết quả: đúng một dòng, không có dòng lỗi.
+  - **Tiền tệ:**
+    - Đặt `platformDispatcher.localeTestValue = Locale('de', 'DE')` trước lần mở đầu: số tiền hiện "€…".
+    - Đổi lại `en_US` rồi dựng lại app (cùng DB): vẫn "€".
+    - Prefs `money.currency` = `'EUR'` cũng cho ra "€".
+  - **Đọc DB lỗi:** `DROP TABLE money_entries` trước lần mở đầu thì hiện `moneyLoadError`.
+  - **Chưa mở tab Money:** trong cây không có `find.text('Spent this month', skipOffstage: false)`.
+- **Bố cục** (`test/widget/money_layout_test.dart`): theo biên 13 ở §9, cỡ chữ 1.0 và 2.0. Riêng cỡ chữ 1.0, kiểm ràng buộc "không cần cuộn" ở cuối §7.2 bằng `getRect`.
+- **Copy và icon** (`assets_and_copy_test.dart`):
+  - Nhóm "money copy" kiểm từng key ở §8.
+  - Nhóm "money icons" kiểm 15 hằng mới có file.
+  - Tổng số SVG vẫn là 67.
+
+---
+
+## 11. Quy ước và file mẫu để chép
+
+- **Dart:** `dart format`; lint theo `analysis_options.yaml`; tên file snake_case; mỗi file một widget public (widget private thì được).
+- **Bảng, converter, CHECK, `// ignore: recursive_getters`:** `lib/data/database.dart`.
+- **Repository và upsert:** `lib/data/habit_repository.dart`, `check_in_repository.dart`, `prefs_repository.dart`.
+- **Hàm chuẩn hoá ghi chú:** `lib/features/check_in/check_in_rules.dart` (`normalizeCheckInNote`).
+- **Tab mở lần đầu mới dựng:** `lib/features/timer/timer_screen.dart`.
+- **Nghe stream trong State, nghe `today`, huỷ trong `dispose`:** `lib/features/timer/fasting_view.dart`. Khác ở một điểm: lỗi stream phải hiện ra, không được để `onError: (_) {}`.
+- **Route toàn màn hình có hàng X:** `lib/features/timer/interval_run_screen.dart`. Push bằng `MaterialPageRoute`, như trong `interval_setup_view.dart`.
+- **Vùng cuộn và vùng nút cố định:** `lib/features/check_in/check_in_screen.dart`.
+- **Sheet và cờ busy:** `lib/features/streaks/habit_actions_sheet.dart`, `add_habit_sheet.dart` (cả mẫu `showDatePicker`), `lib/ui/components/steady_dialogs.dart`.
+- **Chặn bấm lặp:** `lib/features/timer/fasting_view.dart` (`_start`, `_end`).
+- **Component:**
+  - Code mẫu: `steady_segmented_control.dart`, `steady_icon_button.dart`, `steady_stepper.dart`, `steady_chip.dart`, `steady_button.dart`, `steady_progress_bar.dart`.
+  - Màu chỉ qua `SteadyColors.of`; khoảng cách và kích thước qua `SteadySpace`, `SteadyRadius`, `SteadySize`; kiểu chữ qua `SteadyText`. `moneyXl` có sẵn trong `typography.dart`.
+- **Định dạng:** `lib/core/format/formatting.dart` (cache theo tag, `formatLocaleOf`, `formatClockTime`, `formatShortDate`).
+- **Chữ hiển thị** chỉ đi qua `AppLocalizations`. `test/static_rules_test.dart` chặn `Text('...')` viết cứng, `DateTime.now()`, và `Color(0x` ngoài `tokens.dart`.
+- **Thiết kế:**
+  - `design/mockups/money/Main.dc.html`, `AddExpense.dc.html`, `Transactions.dc.html`, và phần "Spending by category" của `Report.dc.html`.
+  - Bỏ qua: icon Settings, TabBar, mục BUDGETS, nút Income, segmented Expense/Income, nút Card, ô tìm kiếm, bộ lọc, dòng chuyển tiền, ô Income/Spent/Saved và "Export as CSV" của Report, câu "… no spending yet".
+  - Không dùng `Envelopes.dc.html`, `Rule503020.dc.html`, `BudgetSetup.dc.html`.
+  - `design/steady-ds/README.md`: các mục Màu, Chữ, Biểu tượng, và mẫu màn Money/Báo cáo. Không sửa file nào trong `design/`.
+- **Test:**
+  - `test/helpers/test_app.dart`, `widget_helpers.dart`, `timer_helpers.dart`.
+  - Quy tắc của `dbAction`: mỗi lần ghi một `runAsync`.
+
+---
+
+## 12. Tiêu chí xong
+
+- Mọi lệnh ở §2 bước 5 trả mã 0. `flutter analyze` báo "No issues found!".
+- Sau Coder: các test rớt nằm trong §10.2, và `thay-doi.md` ghi đúng danh sách đó.
+- Sau Tester: toàn bộ test xanh ở cả múi giờ mặc định và `TZ=America/New_York`. Số test lớn hơn 722.
+- Có `drift_schemas/drift_schema_v3.json`. `test/generated_migrations/schema.dart` có `versions` = [1, 2, 3].
+- `grep -rn "DateTime.now()" lib` không có kết quả. `Color(0x` chỉ xuất hiện trong `lib/core/theme/tokens.dart`.
+- Không thêm package, không thêm SVG. `pubspec.yaml` không đổi.
