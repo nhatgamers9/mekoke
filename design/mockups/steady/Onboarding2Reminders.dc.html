@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · Reminders</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 16px 20px 28px; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 48px">
+<div role="img" aria-label="Step 2 of 3" style="display: flex; gap: 6px">
+<span style="width: 24px; height: 4px; border-radius: 9999px; background: var(--amber)"></span>
+<span style="width: 24px; height: 4px; border-radius: 9999px; background: var(--amber)"></span>
+<span style="width: 24px; height: 4px; border-radius: 9999px; background: var(--surface-2)"></span>
+</div>
+<a href="#" class="label" style="color: var(--ink-muted); text-decoration: none; padding: 12px 0">Skip</a>
+</div>
+<div style="flex-grow: 1"></div>
+<div aria-label="Example reminders" style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; gap: 12px; padding: 14px 16px; border-radius: 22px; background: var(--surface)">
+<span style="display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 9999px; background: var(--amber-soft); color: var(--amber)"><x-import component-from-global-scope="Steady.Icon" name="utensils" size="{{iconSize}}"></x-import></span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span class="caption" style="color: var(--ink-muted)">Steady · 11:30 AM</span>
+<span class="label">Your eating window opens in 30 minutes.</span>
+</div>
+</div>
+<div style="display: flex; gap: 12px; padding: 14px 16px; border-radius: 22px; background: var(--surface); margin-left: 16px">
+<span style="display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 9999px; background: var(--surface-2); color: var(--ink)"><x-import component-from-global-scope="Steady.Icon" name="notebook-pen" size="{{iconSize}}"></x-import></span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span class="caption" style="color: var(--ink-muted)">Steady · 9:00 PM</span>
+<span class="label">How was today? Your check-in takes 10 seconds.</span>
+</div>
+</div>
+<div style="display: flex; gap: 12px; padding: 14px 16px; border-radius: 22px; background: var(--surface); margin-left: 32px">
+<span style="display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 9999px; background: var(--tide-soft); color: var(--tide)"><x-import component-from-global-scope="Steady.Icon" name="sprout" size="{{iconSize}}"></x-import></span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span class="caption" style="color: var(--ink-muted)">Steady · 8:00 AM</span>
+<span class="label">30 days without smoking. That’s a month.</span>
+</div>
+</div>
+</div>
+<div style="height: 16px"></div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 class="display" style="margin: 0">Want a gentle nudge?</h1>
+<p class="body" style="margin: 0; color: var(--ink-muted)">We’ll remind you when your fast starts and ends, and once in the evening. Change it anytime in Settings.</p>
+</div>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<a href="Onboarding3Trial.dc.html" class="st-btn st-btn-primary st-btn-lg st-btn-block body-strong" style="text-decoration: none">Turn on reminders</a>
+<x-import component-from-global-scope="Steady.Button" variant="ghost" block="{{yes}}">Not now</x-import>
+<p class="caption" style="margin: 0; color: var(--ink-muted); text-align: center">Android will ask you to allow notifications next.</p>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return { yes: true, iconSize: 18 };
+}
+}
+</script>
+</body>
+</html>

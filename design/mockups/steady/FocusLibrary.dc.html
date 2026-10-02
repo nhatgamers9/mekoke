@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · Focus library</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="display: flex; flex-direction: column; gap: 16px; padding: 32px 20px 12px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h1 class="display" style="margin: 0">Focus</h1>
+<x-import component-from-global-scope="Steady.IconButton" variant="plain" icon="settings" label="Settings"></x-import>
+</div>
+<x-import component-from-global-scope="Steady.FilterChips" label="Sound category" value="all" options="{{categories}}"></x-import>
+</div>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 4px 20px 0; overflow: hidden">
+<section style="display: flex; flex-direction: column; gap: 4px">
+<h2 class="overline" style="margin: 0; color: var(--ink-muted)">RAIN</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Steady.IconTile" icon="cloud-drizzle" name="Light rain"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="cloud-rain" name="Heavy rain" active="{{yes}}"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="cloud-lightning" name="Thunder" locked="{{yes}}"></x-import>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 4px">
+<h2 class="overline" style="margin: 0; color: var(--ink-muted)">NOISE</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Steady.IconTile" icon="waves" name="Brown noise" active="{{yes}}"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="wind" name="White noise"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="leaf" name="Pink noise" locked="{{yes}}"></x-import>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 4px">
+<h2 class="overline" style="margin: 0; color: var(--ink-muted)">NATURE</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Steady.IconTile" icon="shell" name="Ocean"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="trees" name="Forest"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="flame" name="Fireplace" locked="{{yes}}"></x-import>
+</div>
+</section>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: var(--surface); border-top: 1px solid var(--line)">
+<div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0">
+<span class="overline" style="color: var(--amber)">PLAYING · 2 SOUNDS</span>
+<span class="body-strong">Heavy rain, Brown noise</span>
+<span class="label" style="color: var(--ink-muted)">Stops at 11:45 PM</span>
+</div>
+<x-import component-from-global-scope="Steady.IconButton" variant="filled" icon="sliders-horizontal" label="Adjust mix"></x-import>
+<x-import component-from-global-scope="Steady.IconButton" variant="play" icon="pause" label="Pause"></x-import>
+</div>
+<x-import component-from-global-scope="Steady.TabBar" items="{{tabs}}" active="{{tab}}"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+yes: true,
+categories: [
+{ value: 'all', label: 'All' }, { value: 'rain', label: 'Rain' }, { value: 'noise', label: 'Noise' },
+{ value: 'nature', label: 'Nature' }, { value: 'city', label: 'City' }, { value: 'calm', label: 'Meditation' }
+],
+tab: 0,
+tabs: [
+{ icon: 'audio-waveform', label: 'Focus' },
+{ icon: 'timer', label: 'Timer' },
+{ icon: 'sprout', label: 'Streaks' },
+{ icon: 'notebook-pen', label: 'Check-in' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

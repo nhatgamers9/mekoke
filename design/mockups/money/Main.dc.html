@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · Money</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 32px 20px 0; overflow: hidden">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h1 class="display" style="margin: 0">Money</h1>
+<x-import component-from-global-scope="Steady.IconButton" variant="plain" icon="settings" label="Settings"></x-import>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span class="label" style="color: var(--ink-muted)">October</span>
+<x-import component-from-global-scope="Steady.Chip" icon="lock">Offline · no bank link</x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span class="label" style="color: var(--ink-muted)">Left to spend</span>
+<span class="money-xl">$1,132.00</span>
+<span class="label" style="color: var(--ink-muted)">of $3,200 · 13 days left</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<a href="AddExpense.dc.html" class="st-btn st-btn-primary st-btn-lg body-strong" style="text-decoration: none"><x-import component-from-global-scope="Steady.Icon" name="arrow-up-right" size="{{iconSize}}"></x-import><span>Expense</span></a>
+<x-import component-from-global-scope="Steady.Button" variant="secondary" icon="arrow-down-left">Income</x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 class="overline" style="margin: 0; color: var(--ink-muted)">BUDGETS</h2>
+<a href="Envelopes.dc.html" class="label" style="text-decoration: none">See all</a>
+</div>
+<div style="border-radius: 22px; overflow: hidden">
+<x-import component-from-global-scope="Steady.BudgetRow" icon="shopping-cart" name="Groceries" spent="$320" limit="$450" left="$130 left" value="{{groceries}}"></x-import>
+<x-import component-from-global-scope="Steady.BudgetRow" icon="coffee" name="Eating out" spent="$184" limit="$160" left="Over by $24" value="{{full}}" over="{{yes}}"></x-import>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 class="overline" style="margin: 0; color: var(--ink-muted)">RECENT</h2>
+<a href="Transactions.dc.html" class="label" style="text-decoration: none">See all</a>
+</div>
+<div style="border-radius: 22px 22px 0 0; overflow: hidden">
+<x-import component-from-global-scope="Steady.TransactionRow" icon="shopping-cart" title="Groceries" detail="Card · 6:42 PM" amount="−$48.20"></x-import>
+<x-import component-from-global-scope="Steady.TransactionRow" icon="coffee" title="Coffee" detail="Eating out · Cash · 9:10 AM" amount="−$4.50"></x-import>
+</div>
+</div>
+</div>
+<x-import component-from-global-scope="Steady.TabBar" items="{{tabs}}" active="{{tab}}"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+yes: true,
+iconSize: 20,
+groceries: 0.71,
+full: 1,
+tab: 3,
+tabs: [
+{ icon: 'audio-waveform', label: 'Focus' },
+{ icon: 'timer', label: 'Timer' },
+{ icon: 'sprout', label: 'Streaks' },
+{ icon: 'wallet', label: 'Money' },
+{ icon: 'notebook-pen', label: 'Check-in' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

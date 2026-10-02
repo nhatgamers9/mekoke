@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · Add expense</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 12px 20px 24px; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="display: flex; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Steady.IconButton" variant="plain" icon="x" label="Close"></x-import>
+<x-import component-from-global-scope="Steady.SegmentedControl" label="Type" value="expense" options="{{types}}" style="flex-grow: 1"></x-import>
+<div style="width: 48px"></div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; padding: 4px 0">
+<span class="money-xl">$12.40</span>
+<span class="label" style="color: var(--ink-muted)">Groceries</span>
+</div>
+<div role="group" aria-label="Category"style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+<x-import component-from-global-scope="Steady.IconTile" icon="shopping-cart" name="Groceries" active="{{yes}}"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="coffee" name="Eating out"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="car" name="Transport"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="zap" name="Bills"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="shirt" name="Shopping"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="heart-pulse" name="Health"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="gift" name="Gifts"></x-import>
+<x-import component-from-global-scope="Steady.IconTile" icon="plus" name="More"></x-import>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<x-import component-from-global-scope="Steady.Button" size="md" icon="credit-card">Card</x-import>
+<x-import component-from-global-scope="Steady.Button" size="md" icon="calendar">Today</x-import>
+<x-import component-from-global-scope="Steady.Button" size="md" icon="notebook-pen">Note</x-import>
+</div>
+<x-import component-from-global-scope="Steady.Keypad"></x-import>
+<x-import component-from-global-scope="Steady.Button" variant="primary" block="{{yes}}">Save expense</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+yes: true,
+types: [{ value: 'expense', label: 'Expense' }, { value: 'income', label: 'Income' }]
+};
+}
+}
+</script>
+</body>
+</html>

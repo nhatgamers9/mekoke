@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · Budgets, 50/30/20</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 12px 20px 24px; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="display: flex; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Steady.IconButton" variant="plain" icon="x" label="Close"></x-import>
+<h1 class="title" style="margin: 0">Budgets</h1>
+</div>
+<x-import component-from-global-scope="Steady.SegmentedControl" label="Budget method" value="rule" options="{{methods}}"></x-import>
+<span class="label" style="color: var(--ink-muted)">October · based on $4,000 income</span>
+<div style="border-radius: 22px; overflow: hidden">
+<x-import component-from-global-scope="Steady.BudgetRow" icon="house" name="Needs · 50%" spent="$1,794" limit="$2,000" left="$206 left" value="{{needs}}"></x-import>
+<x-import component-from-global-scope="Steady.BudgetRow" icon="gift" name="Wants · 30%" spent="$274" limit="$1,200" left="$926 left" value="{{wants}}"></x-import>
+<x-import component-from-global-scope="Steady.BudgetRow" icon="piggy-bank" name="Savings · 20%" spent="$600" limit="$800" left="$200 to go" value="{{savings}}"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 22px; background: var(--surface)">
+<h2 class="headline" style="margin: 0">How 50/30/20 works</h2>
+<p class="label" style="margin: 0; color: var(--ink-muted)">Half of your take-home pay goes to needs: rent, groceries, bills, transport.</p>
+<p class="label" style="margin: 0; color: var(--ink-muted)">Up to 30% goes to wants: eating out, fun, shopping, travel.</p>
+<p class="label" style="margin: 0; color: var(--ink-muted)">At least 20% goes to savings and paying off debt.</p>
+</div>
+<div style="flex-grow: 1"></div>
+<x-import component-from-global-scope="Steady.Button" variant="secondary" block="{{yes}}">Change income</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+yes: true,
+needs: 0.897,
+wants: 0.228,
+savings: 0.75,
+methods: [{ value: 'envelopes', label: 'Envelopes' }, { value: 'rule', label: '50/30/20' }]
+};
+}
+}
+</script>
+</body>
+</html>

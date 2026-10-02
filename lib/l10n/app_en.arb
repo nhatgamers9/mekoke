@@ -1,0 +1,327 @@
+{
+  "@@locale": "en",
+  "tabFocus": "Focus",
+  "tabTimer": "Timer",
+  "tabStreaks": "Streaks",
+  "tabMoney": "Money",
+  "tabCheckIn": "Check-in",
+  "placeholderBody": "This part of Steady isn't ready yet.",
+  "addHabit": "Add habit",
+  "streaksEmpty": "Add a habit you want to leave behind.",
+  "streakDayUnit": "{count, plural, =1{day} other{days}}",
+  "@streakDayUnit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakSince": "Since {date}",
+  "@streakSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "milestoneNext": "Next: {target, plural, =1{1 day} other{{target} days}} · {remaining} to go",
+  "@milestoneNext": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+  "habitNameLabel": "Habit",
+  "habitNameHint": "No sugar",
+  "cleanSinceLabel": "Clean since",
+  "saveHabit": "Save habit",
+  "resetStreak": "Reset streak",
+  "resetDone": "That's okay. Your count starts again today.",
+  "deleteHabit": "Delete habit",
+  "deleteHabitTitle": "Delete {habit}?",
+  "@deleteHabitTitle": {
+    "placeholders": {
+      "habit": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteHabitBody": "This removes the habit and its count. It can't be undone.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "greetingMorning": "Good morning",
+  "greetingAfternoon": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "howWasToday": "How was today?",
+  "moodAwful": "Awful",
+  "moodLow": "Low",
+  "moodOkay": "Okay",
+  "moodGood": "Good",
+  "moodGreat": "Great",
+  "noteLabel": "One line about today",
+  "noteCounter": "{count} / {max}",
+  "@noteCounter": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "saveCheckIn": "Save check-in",
+  "checkInSaved": "Check-in saved.",
+  "saveError": "Couldn't save. Try again.",
+  "streakChip": "Day {count} · {habit}",
+  "@streakChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "habit": {
+        "type": "String"
+      }
+    }
+  },
+  "timerTypeLabel": "Timer type",
+  "timerModeFasting": "Fasting",
+  "timerModeInterval": "Interval",
+  "fastingPlanLabel": "Fasting plan",
+  "fastPlan16": "16:8",
+  "fastPlan18": "18:6",
+  "fastPlan20": "20:4",
+  "fastPlanOmad": "OMAD",
+  "phaseFasting": "FASTING",
+  "phaseEating": "EATING",
+  "phaseWork": "WORK",
+  "phaseRest": "REST",
+  "phasePrepare": "PREPARE",
+  "phaseDone": "DONE",
+  "fastStartedToday": "Started today, {time}",
+  "@fastStartedToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "fastStartedYesterday": "Started yesterday, {time}",
+  "@fastStartedYesterday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "fastStartedOn": "Started {date}, {time}",
+  "@fastStartedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "fastEndsAt": "Ends {time}",
+  "@fastEndsAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "fastGoalReachedAt": "Goal reached at {time}",
+  "@fastGoalReachedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "eatingWindowEndsAt": "Eating window ends {time}",
+  "@eatingWindowEndsAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "fastGoalHours": "Goal: {hours, plural, =1{1 hour} other{{hours} hours}}",
+  "@fastGoalHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "statLeftInFast": "Left in this fast",
+  "statPastGoal": "Past your goal",
+  "statLastFast": "Last fast",
+  "statFastingStreak": "Fasting streak",
+  "durationHm": "{hours}h {minutes}m",
+  "@durationHm": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "daysCount": "{count, plural, =1{1 day} other{{count} days}}",
+  "@daysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statEmpty": "—",
+  "startFasting": "Start fasting",
+  "endFast": "End fast",
+  "endFastEarlyTitle": "End fast now?",
+  "endFastEarlyBody": "You're {left} from your goal.",
+  "@endFastEarlyBody": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "keepFasting": "Keep fasting",
+  "fastingDisclaimer": "Fasting isn't right for everyone. Check with your doctor first.",
+  "savedWorkoutsLabel": "Saved workouts",
+  "presetTabata": "Tabata",
+  "presetHiit": "HIIT 30/30",
+  "presetCustom": "Custom",
+  "intervalSummary": "{intervals, plural, =1{1 interval} other{{intervals} intervals}} · {rounds, plural, =1{1 round} other{{rounds} rounds}}",
+  "@intervalSummary": {
+    "placeholders": {
+      "intervals": {
+        "type": "int"
+      },
+      "rounds": {
+        "type": "int"
+      }
+    }
+  },
+  "stepPrepare": "Prepare",
+  "stepWork": "Work",
+  "stepRest": "Rest",
+  "stepRounds": "Rounds",
+  "stepRoundsDetail": "Work + rest",
+  "stepSets": "Sets",
+  "stepSetRest": "Rest between sets",
+  "decreaseLabel": "Decrease {label}",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "Increase {label}",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "startWorkout": "Start workout",
+  "intervalRingCaption": "{work} work · {rest} rest",
+  "@intervalRingCaption": {
+    "placeholders": {
+      "work": {
+        "type": "String"
+      },
+      "rest": {
+        "type": "String"
+      }
+    }
+  },
+  "secondsShort": "{seconds} s",
+  "@secondsShort": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "nextPhase": "Next: {phase} {time}",
+  "@nextPhase": {
+    "placeholders": {
+      "phase": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "roundChip": "{round} / {rounds}",
+  "@roundChip": {
+    "placeholders": {
+      "round": {
+        "type": "int"
+      },
+      "rounds": {
+        "type": "int"
+      }
+    }
+  },
+  "roundOf": "Round {round} of {rounds}",
+  "@roundOf": {
+    "placeholders": {
+      "round": {
+        "type": "int"
+      },
+      "rounds": {
+        "type": "int"
+      }
+    }
+  },
+  "setRoundOf": "Set {set} of {sets} · Round {round} of {rounds}",
+  "@setRoundOf": {
+    "placeholders": {
+      "set": {
+        "type": "int"
+      },
+      "sets": {
+        "type": "int"
+      },
+      "round": {
+        "type": "int"
+      },
+      "rounds": {
+        "type": "int"
+      }
+    }
+  },
+  "timeLeft": "{time} left",
+  "@timeLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "workoutProgressLabel": "Workout progress",
+  "endWorkout": "End workout",
+  "restartRound": "Restart round",
+  "pause": "Pause",
+  "skipRound": "Skip round",
+  "resume": "Resume",
+  "endWorkoutTitle": "End workout?",
+  "endWorkoutBody": "This workout stops here.",
+  "keepGoing": "Keep going",
+  "close": "Close"
+}

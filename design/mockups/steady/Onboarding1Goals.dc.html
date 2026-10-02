@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · What brings you here?</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 16px 20px 28px; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 48px">
+<div role="img" aria-label="Step 1 of 3" style="display: flex; gap: 6px">
+<span style="width: 24px; height: 4px; border-radius: 9999px; background: var(--amber)"></span>
+<span style="width: 24px; height: 4px; border-radius: 9999px; background: var(--surface-2)"></span>
+<span style="width: 24px; height: 4px; border-radius: 9999px; background: var(--surface-2)"></span>
+</div>
+<a href="#" class="label" style="color: var(--ink-muted); text-decoration: none; padding: 12px 0">Skip</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 class="display" style="margin: 0">What brings you here?</h1>
+<p class="body" style="margin: 0; color: var(--ink-muted)">Pick all that apply. We’ll put these first.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<x-import component-from-global-scope="Steady.OptionCard" icon="audio-waveform" title="Focus better" detail="Sounds for deep work" selected="{{yes}}"></x-import>
+<x-import component-from-global-scope="Steady.OptionCard" icon="moon" title="Sleep better" detail="Sounds with a sleep timer" selected="{{yes}}"></x-import>
+<x-import component-from-global-scope="Steady.OptionCard" icon="utensils" title="Try fasting" detail="16:8 and other plans"></x-import>
+<x-import component-from-global-scope="Steady.OptionCard" icon="dumbbell" title="Train in intervals" detail="HIIT and Tabata timers"></x-import>
+<x-import component-from-global-scope="Steady.OptionCard" icon="sprout" title="Quit a habit" detail="Count your days clean"></x-import>
+</div>
+<div style="flex-grow: 1"></div>
+<a href="Onboarding2Reminders.dc.html" class="st-btn st-btn-primary st-btn-lg st-btn-block body-strong" style="text-decoration: none">Continue</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return { yes: true };
+}
+}
+</script>
+</body>
+</html>

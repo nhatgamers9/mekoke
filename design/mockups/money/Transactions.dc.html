@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · Transactions</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 12px 20px 0; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="display: flex; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Steady.IconButton" variant="plain" icon="x" label="Close"></x-import>
+<h1 class="title" style="margin: 0">Transactions</h1>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px; border-radius: 9999px; background: var(--surface); color: var(--ink-muted)">
+<x-import component-from-global-scope="Steady.Icon" name="search" size="{{iconSize}}"></x-import>
+<input type="search" aria-label="Search transactions" placeholder="Search notes and categories" class="body" style="flex-grow: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--ink)">
+</div>
+<x-import component-from-global-scope="Steady.FilterChips" label="Show" value="all" options="{{filters}}"></x-import>
+<section style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 class="overline" style="margin: 0; color: var(--ink-muted)">TODAY</h2>
+<span class="label" style="color: var(--ink-muted); font-variant-numeric: tabular-nums">−$52.70</span>
+</div>
+<div style="border-radius: 22px; overflow: hidden">
+<x-import component-from-global-scope="Steady.TransactionRow" icon="shopping-cart" title="Groceries" detail="Card · 6:42 PM" amount="−$48.20"></x-import>
+<x-import component-from-global-scope="Steady.TransactionRow" icon="coffee" title="Coffee" detail="Eating out · Cash · 9:10 AM" amount="−$4.50"></x-import>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 class="overline" style="margin: 0; color: var(--ink-muted)">YESTERDAY</h2>
+<span class="label" style="color: var(--ink-muted); font-variant-numeric: tabular-nums">−$31.00</span>
+</div>
+<div style="border-radius: 22px; overflow: hidden">
+<x-import component-from-global-scope="Steady.TransactionRow" icon="car" title="Gas" detail="Transport · Card · 5:15 PM" amount="−$31.00"></x-import>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 class="overline" style="margin: 0; color: var(--ink-muted)">OCT 1</h2>
+<span class="label" style="color: var(--ink-muted); font-variant-numeric: tabular-nums">+$2,800.00</span>
+</div>
+<div style="border-radius: 22px 22px 0 0; overflow: hidden">
+<x-import component-from-global-scope="Steady.TransactionRow" icon="briefcase" title="Salary" detail="Bank · 9:00 AM" amount="+$4,000.00" kind="income"></x-import>
+<x-import component-from-global-scope="Steady.TransactionRow" icon="house" title="Rent" detail="Bank · 9:05 AM" amount="−$1,200.00"></x-import>
+<x-import component-from-global-scope="Steady.TransactionRow" icon="arrow-left-right" title="To savings" detail="Bank → Savings" amount="$600.00" kind="transfer"></x-import>
+</div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+iconSize: 20,
+filters: [
+{ value: 'all', label: 'All' }, { value: 'expense', label: 'Expenses' },
+{ value: 'income', label: 'Income' }, { value: 'transfer', label: 'Transfers' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

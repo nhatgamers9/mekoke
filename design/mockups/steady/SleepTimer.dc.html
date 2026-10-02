@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · Sleep timer</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#000000}
+a{color:#d98b3a}a:hover{color:#d9b48a}
+</style>
+</helmet>
+<div data-theme="bedtime" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; padding: 12px 20px 48px; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="align-self: stretch; display: flex; justify-content: space-between; align-items: center">
+<x-import component-from-global-scope="Steady.IconButton" variant="plain" icon="x" label="Close sleep timer"></x-import>
+<x-import component-from-global-scope="Steady.Chip" icon="moon">Bedtime mode</x-import>
+</div>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center">
+<h1 class="title" style="margin: 0">Brown noise</h1>
+<p class="label" style="margin: 0; color: var(--ink-muted)">Fades out over the last 5 minutes</p>
+</div>
+<div style="height: 32px"></div>
+<x-import component-from-global-scope="Steady.TimerRing" progress="{{progress}}" time="38:12" phase="SLEEP" caption="Stops at 11:45 PM"></x-import>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; align-items: center; gap: 24px">
+<x-import component-from-global-scope="Steady.IconButton" variant="filled" icon="minus" label="5 minutes less"></x-import>
+<x-import component-from-global-scope="Steady.IconButton" variant="play" icon="pause" label="Pause"></x-import>
+<x-import component-from-global-scope="Steady.IconButton" variant="filled" icon="plus" label="5 minutes more"></x-import>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return { progress: 0.15 };
+}
+}
+</script>
+</body>
+</html>
