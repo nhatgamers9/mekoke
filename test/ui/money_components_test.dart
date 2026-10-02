@@ -544,7 +544,21 @@ void main() {
       expect(node.label, contains('Groceries'));
       expect(node.label, contains('9:00 PM'));
       expect(node.label, contains('12.40'));
-      expect(node, isSemantics(hasTapAction: true));
+      expect(node, isSemantics(isButton: true, hasTapAction: true));
+      handle.dispose();
+    });
+
+    testWidgets('without onTap it is not announced as a button', (
+      tester,
+    ) async {
+      await _size(tester);
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_host(row()));
+      final node = tester.getSemantics(find.byType(TransactionRow));
+      expect(node, isSemantics(isButton: false, hasTapAction: false));
+      expect(node.label, contains('Groceries'));
+      expect(node.label, contains('9:00 PM'));
+      expect(node.label, contains('12.40'));
       handle.dispose();
     });
   });

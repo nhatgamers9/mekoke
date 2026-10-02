@@ -1110,6 +1110,81 @@ void main() {
       await disposeSteadyApp(tester, services);
     });
 
+    testWidgets('an es_AR phone gets Argentine pesos, not euros', (
+      tester,
+    ) async {
+      // intl một mình ra EUR cho es_AR; bảng theo vùng mới ra ARS. Ký hiệu
+      // của ARS trong tiếng Anh cũng là "$", nên chỉ kiểm mã đã lưu.
+      setDeviceLocale(tester, const Locale('es', 'AR'));
+      final now = FakeNow(evening());
+      final services = await pumpSteadyApp(tester, clock: now.clock);
+      await openMoney(tester);
+
+      expect(
+        await tester.runAsync(() => services.prefs.read('money.currency')),
+        'ARS',
+      );
+
+      await disposeSteadyApp(tester, services);
+    });
+
+    testWidgets('an en_VN phone gets dong: the region wins over the language', (
+      tester,
+    ) async {
+      setDeviceLocale(tester, const Locale('en', 'VN'));
+      final now = FakeNow(evening());
+      final services = await pumpSteadyApp(tester, clock: now.clock);
+      await openMoney(tester);
+
+      expect(
+        await tester.runAsync(() => services.prefs.read('money.currency')),
+        'VND',
+      );
+      expect(find.textContaining(r'$'), findsNothing);
+
+      await disposeSteadyApp(tester, services);
+    });
+
+    testWidgets('a zh_Hant_TW phone gets new Taiwan dollars', (tester) async {
+      setDeviceLocale(
+        tester,
+        const Locale.fromSubtags(
+          languageCode: 'zh',
+          scriptCode: 'Hant',
+          countryCode: 'TW',
+        ),
+      );
+      final now = FakeNow(evening());
+      final services = await pumpSteadyApp(tester, clock: now.clock);
+      await openMoney(tester);
+
+      expect(
+        await tester.runAsync(() => services.prefs.read('money.currency')),
+        'TWD',
+      );
+
+      await disposeSteadyApp(tester, services);
+    });
+
+    testWidgets('a phone in a region with no currency still gets USD', (
+      tester,
+    ) async {
+      // AQ (Nam Cực) không có trong bảng: màn Money vẫn mở được, tiền là USD.
+      setDeviceLocale(tester, const Locale('en', 'AQ'));
+      final now = FakeNow(evening());
+      final services = await pumpSteadyApp(tester, clock: now.clock);
+      await openMoney(tester);
+
+      expect(_big(tester), r'$0.00');
+      expect(
+        await tester.runAsync(() => services.prefs.read('money.currency')),
+        'USD',
+      );
+      expect(tester.takeException(), isNull);
+
+      await disposeSteadyApp(tester, services);
+    });
+
     testWidgets('an en_GB phone gets pounds and day-first dates', (
       tester,
     ) async {

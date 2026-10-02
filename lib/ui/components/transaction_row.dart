@@ -30,77 +30,82 @@ class TransactionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = SteadyColors.of(context);
     return MergeSemantics(
-      child: Material(
-        color: c.surface,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 64),
-            padding: const EdgeInsets.symmetric(
-              horizontal: SteadySpace.s4,
-              vertical: SteadySpace.s3,
-            ),
-            decoration: divider
-                ? BoxDecoration(
-                    border: Border(bottom: BorderSide(color: c.line)),
-                  )
-                : null,
-            child: LayoutBuilder(
-              builder: (context, constraints) => Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: c.surface2,
-                      shape: BoxShape.circle,
+      child: Semantics(
+        button: onTap != null,
+        child: Material(
+          color: c.surface,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 64),
+              padding: const EdgeInsets.symmetric(
+                horizontal: SteadySpace.s4,
+                vertical: SteadySpace.s3,
+              ),
+              decoration: divider
+                  ? BoxDecoration(
+                      border: Border(bottom: BorderSide(color: c.line)),
+                    )
+                  : null,
+              child: LayoutBuilder(
+                builder: (context, constraints) => Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: c.surface2,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: SteadyIcon(icon, size: 20, color: c.ink),
+                      ),
                     ),
-                    child: Center(
-                      child: SteadyIcon(icon, size: 20, color: c.ink),
-                    ),
-                  ),
-                  const SizedBox(width: SteadySpace.s3),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: SteadyText.body.copyWith(color: c.ink),
-                        ),
-                        if (detail != null)
+                    const SizedBox(width: SteadySpace.s3),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           Text(
-                            detail!,
+                            title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: SteadyText.label.copyWith(color: c.inkMuted),
+                            style: SteadyText.body.copyWith(color: c.ink),
                           ),
-                      ],
+                          if (detail != null)
+                            Text(
+                              detail!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: SteadyText.label.copyWith(
+                                color: c.inkMuted,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: SteadySpace.s3),
-                  // Số tiền lớn thì thu nhỏ lại, không chiếm quá nửa hàng.
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: constraints.maxWidth / 2,
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        amount,
-                        maxLines: 1,
-                        style: SteadyText.bodyStrong.copyWith(
-                          color: c.ink,
-                          fontFeatures: const [FontFeature.tabularFigures()],
+                    const SizedBox(width: SteadySpace.s3),
+                    // Số tiền lớn thì thu nhỏ lại, không chiếm quá nửa hàng.
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth / 2,
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          amount,
+                          maxLines: 1,
+                          style: SteadyText.bodyStrong.copyWith(
+                            color: c.ink,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

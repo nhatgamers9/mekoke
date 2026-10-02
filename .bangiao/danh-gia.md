@@ -1,209 +1,110 @@
-PHAN QUYET: CAN SUA
+PHAN QUYET: CHOT
 
-# Đánh giá: GĐ3 phần 1, tab Money (theo dõi chi tiêu)
+# Đánh giá: vòng "sửa tiếp", tiền tệ theo vùng (BG ra EUR, ZW ra USD)
 
-> Ghi chú của điều phối viên: Reviewer không có công cụ Write nên đã gửi nguyên văn nội dung dưới đây; điều phối viên lưu lại không sửa chữ nào. Sau đó điều phối viên kiểm thêm hai việc:
-> - Chạy độc lập sau khi Tester xong:
->   - `flutter analyze`: "No issues found!".
->   - `flutter test`: +1188, "All tests passed!".
->   - `TZ=America/New_York flutter test`: +1188, "All tests passed!".
-> - Xác nhận lỗi ở mục 1 bằng một script intl chạy thật. Kết quả: `es_AR` → `es` → EUR; `ar_SA` → `ar` → EGP; `en_PH` và `en_VN` → `en` → USD; `fr_MA` → `fr` → EUR. Các locale `en_US`, `de_DE`, `vi_VN` ra đúng.
+> Ghi chú của điều phối viên: Reviewer không có công cụ Write nên đã gửi nguyên văn nội dung dưới đây. Điều phối viên lưu lại, không sửa chữ nào. Sau khi Tester xong, điều phối viên đã chạy lại độc lập:
+> - `flutter analyze`: "No issues found!".
+> - `flutter test`: +1244 "All tests passed!".
+> - `TZ=America/New_York flutter test`: +1244 "All tests passed!".
 
-Reviewer, chặng 4 của /ship. Nhánh `claude/vigilant-archimedes-0yt6az`, so với mốc `d88adf6`.
-- Tôi chỉ đọc: `git diff`, `git status`, các file mới, và mã nguồn `intl 0.20.3` cùng Flutter SDK để kiểm hành vi.
-- Tôi không chạy `flutter test`, vì lệnh này ghi vào `.dart_tool/` và `build/`. Con số +1188, 0 rớt là theo báo cáo của Tester.
+Reviewer, chặng 4 của /ship. Nhánh `claude/vigilant-archimedes-0yt6az`, mốc `267a46a`. Viết tắt `SP` = `/tmp/claude-0/-home-user-mekoke/cc7bfc32-2202-5695-aafd-72552f98ca86/scratchpad`.
+
+Tôi chỉ đọc. Cụ thể:
+- Chạy `git status`, `git diff --stat 267a46a`.
+- Diff `SP/region_currency.before.dart` với `lib/core/format/region_currency.dart`.
+- Diff `SP/mut/base/` (bản chốt vòng trước) với 5 file `lib/` và `test/` hiện tại, để tách riêng phần của vòng này.
+- Đọc `SP/gen_region_currency.py`.
+- Tra Babel 2.18.0 bằng `python -B` (không ghi file). Đối chiếu bảng với intl bằng một cách khác với script: `babel.Locale.parse` thay cho `split('_')` kết hợp `language_aliases`.
+- Chạy logic của script trong bộ nhớ, cắt trước bước ghi file, `OUT` trỏ vào `/dev/null`, để thử ghi đè thừa.
+- Không chạy `flutter test`, vì lệnh này ghi vào `.dart_tool/`. Số +1244 lấy từ dòng cuối của `SP/ship-run7/tester_default.log`, `tester_ny.log` và 5 log trong `SP/ship-run7/mutlogs/`.
 
 ## Tóm tắt
-- Code khớp kế hoạch gần như từng dòng. Tám chỗ lệch mà Coder ghi ở mục 5 của `thay-doi.md` đều hợp lý.
-- Định hướng "chỉ theo dõi chi tiêu" được giữ đúng:
-  - Bảng không có cột `kind`.
-  - Không có key nào về thu nhập, tiết kiệm, hạn mức hay chuyển tiền.
-  - `TransactionRow` không có `kind`.
-  - Tab Money không dùng màu `tide`.
-- Test kiểm được thật, không viết cho có: 40/40 đột biến bị bắt, có ca đối chứng, có ca phải thất bại, có bắt log SQL.
-- Còn hai việc phải sửa trong một vòng ngắn:
-  - một lỗi đúng đắn để lại hậu quả lâu dài: tiền tệ mặc định sai ở nhiều vùng, và giá trị sai bị lưu cố định;
-  - một lỗi trợ năng nhỏ.
-
-## Cần sửa
-
-### 1. Tiền tệ mặc định bỏ mất vùng của máy (bắt buộc)
-- Chỗ lỗi: `lib/core/format/money_format.dart`, dòng 62–66 (`currencyForLocale`).
-- Nơi gọi: `lib/features/money/money_screen.dart`, dòng 95–100.
-
-**Vấn đề.** `Intl.verifiedLocale(tag, NumberFormat.localeExists, …)` chỉ giữ được vùng khi intl có sẵn đúng cặp `ngôn ngữ_VÙNG`.
-- intl 0.20.3 chỉ có khoảng 20 cặp như vậy: `en_US`, `en_GB`, `de_AT`, `es_MX`, `zh_TW`, …
-- Khi không có cặp, hàm rơi về ngôn ngữ trần, rồi lấy `DEF_CURRENCY_CODE` của ngôn ngữ đó.
-- Theo `intl-0.20.3/lib/number_symbols_data.dart`: `es` ra EUR, `ar` ra EGP, `en` ra USD, `fr` ra EUR, `pt` ra BRL, `ru` ra RUB.
-
-Kết quả:
-
-| Máy | Hiện ra | Đúng ra |
-|---|---|---|
-| `es_AR`, `es_CO`, `es_CL`, `es_PE` | EUR | ARS, COP, CLP, PEN |
-| `ar_SA`, `ar_AE` | EGP | SAR, AED |
-| `en_PH`, `en_NG`, `en_PK` | USD | PHP, NGN, PKR |
-| `en_VN` (iPhone tiếng Anh, vùng Việt Nam) | USD | VND |
-| `fr_MA`, `pt_AO`, `ru_KZ` | EUR, BRL, RUB | MAD, AOA, KZT |
-
-**Hậu quả.**
-- Giá trị sai được ghi vào prefs `money.currency` ở lần mở đầu và không bao giờ được tính lại (`lib/data/prefs_repository.dart`, dòng 74).
-- Trước GĐ5 không có màn nào để người dùng đổi tiền tệ.
-- Sang GĐ5, đổi giữa hai tiền tệ có số chữ số thập phân khác nhau (ví dụ EUR 2 chữ số sang CLP 0 chữ số) sẽ làm sai cả các số tiền đã lưu theo đơn vị nhỏ nhất.
-
-**Vì sao vẫn phải sửa dù Coder làm đúng kế hoạch.**
-- Q2 đã chốt "lấy tiền tệ theo vùng của máy". Code hiện tại chưa làm được điều đó, nên sửa là làm cho đúng quyết định đã chốt, không phải đổi quyết định.
-- Lỗi bắt nguồn từ thuật toán ghi trong kế hoạch §5.2; Coder làm đúng như kế hoạch.
-- Test hiện có chỉ thử các locale mà intl có sẵn cặp, nên không bắt được lỗi này.
-- App chưa phát hành, chưa có máy nào lưu sai. Sửa bây giờ là rẻ nhất.
-
-**Cách sửa (không thêm package).**
-1. Tạo `lib/core/format/region_currency.dart`, chứa `const Map<String, String> kRegionCurrency`:
-   - khoá là mã vùng ISO 3166-1 alpha-2, giá trị là mã tiền ISO 4217;
-   - lấy tiền đang lưu hành theo bảng currencyData trong `supplementalData` của CLDR;
-   - khoảng 250 mục.
-2. Trong `currencyForLocale`:
-   - tách tag theo `_` hoặc `-`;
-   - lấy subtag vùng (2 chữ cái hoặc 3 chữ số), bỏ subtag script 4 chữ cái như `Hant`;
-   - đổi vùng sang chữ in hoa rồi tra bảng; có thì trả về;
-   - không có thì giữ nguyên logic hiện tại (dựa vào intl, cuối cùng là USD).
-3. Các trường hợp đang đúng phải giữ nguyên: `en_US` ra USD, `de_DE` ra EUR, `ja_JP` ra JPY, `vi_VN` ra VND, `en_GB` ra GBP, `xx` và `xx_YY` ra USD.
-4. Không cần đổi chữ ký hàm, cũng không cần sửa `money_screen.dart`.
-
-**Test (phần của Tester).**
-- Trong `test/core/money_format_test.dart`, nhóm `MoneyFormat.currencyForLocale` (dòng 122–144):
-  - thêm các ca: `es_AR` ra ARS, `es_CO` ra COP, `ar_SA` ra SAR, `en_PH` ra PHP, `en_VN` ra VND, `fr_MA` ra MAD, `zh_Hant_TW` ra TWD, `ru_KZ` ra KZT;
-  - thêm một ca kiểm mọi giá trị trong bảng đều khớp `^[A-Z]{3}$`, vì `loadCurrency` sẽ ghi đè giá trị không khớp.
-- Trong `test/widget/money_screen_test.dart`, nhóm `Money tab: currency` (từ dòng 1016):
-  - `setDeviceLocale(Locale('es', 'AR'))` thì prefs là `ARS`;
-  - `Locale('en', 'VN')` thì prefs là `VND`.
-
-**Phương án khác.** Nếu người dùng không muốn có bảng này, phương án còn lại là Q2(c): hỏi tiền tệ ở lần mở đầu. Phương án đó cần người dùng quyết định.
-
-### 2. `TransactionRow` chạm được nhưng không có vai trò "nút" (nhỏ, sửa cùng vòng)
-- Chỗ lỗi: `lib/ui/components/transaction_row.dart`, dòng 32–33.
-- `InkWell` chỉ cho hành động `tap`, không cho cờ `button` (xem `flutter/lib/src/material/ink_well.dart`, khoảng dòng 1401). TalkBack vì vậy không đọc hàng khoản chi là "nút".
-- Component cùng loại `StreakCard` đã làm đúng (`lib/ui/components/streak_card.dart`, dòng 64–66).
-
-Sửa:
-```dart
-return MergeSemantics(
-  child: Semantics(
-    button: onTap != null,
-    child: Material(
-      ...
-```
-
-Test:
-- Trong `test/ui/money_components_test.dart`, dòng 547 đổi thành `isSemantics(isButton: true, hasTapAction: true)`.
-- Thêm một ca `onTap: null` thì không có `isButton`.
+- Hai việc "Cần sửa" của vòng trước đã xong, đúng cách đã đề xuất: `BG` ra `EUR` và `ZW` ra `USD` bằng `OVERRIDES` trong script, rồi sinh lại bảng. `PA` vẫn `PAB`.
+- So với bản cũ, bảng chỉ khác khối `///` và đúng 2 dòng: dòng 53 `'BG': 'EUR',` và dòng 286 `'ZW': 'USD',`. Bảng vẫn 255 mục.
+- Vòng này chỉ đổi `lib/core/format/region_currency.dart` và 6 chỗ trong `test/core/money_format_test.dart`. Các file sau giống hệt bản chốt vòng trước: `money_format.dart`, `transaction_row.dart`, `money_components_test.dart`, `money_screen_test.dart`. `pubspec.*` không đổi.
+- Không có hồi quy. Có vài điểm nên làm để script bền hơn cho lần sau, nhưng không chặn.
 
 ## Ba câu hỏi
 
 ### Code có khớp kế hoạch không?
-Có. Tôi đã đối chiếu từ §4 tới §8 của kế hoạch.
-
-- **Schema.**
-  - So với v2, `drift_schema_v3.json` chỉ thêm đúng một entity là `money_entries`.
-  - `schema_v3.dart` có `CHECK (amount_minor BETWEEN 1 AND 999999999999)`.
-  - Không đổi: `schema_v1`/`schema_v2`, `drift_schema_v1`/`v2`, `pubspec.*`, `assets/`, `design/`.
-  - `onUpgrade` giữ khối `from < 2` và thêm `from < 3`.
-- **Repository.**
-  - Mọi stream xếp theo `date DESC, createdAt DESC, id DESC`.
-  - Số tiền hoặc ghi chú sai thì ném `ArgumentError`.
-  - `update` không đổi `createdAt`.
-  - `delete` và `update` trả `false` khi không có `id`.
-- **`loadCurrency`:** không bao giờ ném lỗi, đúng §4.4.
-- **`AmountInput`:** đúng bảng `press`. Đã kiểm `fromMinor`/`toMinor`, ví dụ (5, 2) ra "0.05", "12." ra 1200.
-- **Màn hình và component:** đúng §6 và §7.
-- **Các chỗ lệch Coder đã ghi**, đều chấp nhận được:
-  - `IconTile` ô "More" có thêm `onTap`. Đúng: vì có `excludeSemantics` nên thiếu `onTap` thì TalkBack không bấm được.
-  - `_busy` cho cả `_pickDate` và `_editNote`.
-  - `ConstrainedBox` cho tổng mỗi ngày.
-  - `StreamBuilder` ở màn Expenses.
-- **Theo dõi chi tiêu:** không còn sót phần thu nhập hay tiết kiệm.
-  - Grep trong `lib/` không thấy income, saving, budget hay transfer ở phần Money.
-  - Test copy khoá điều này.
+Có.
+- **§1.1:** `OVERRIDES` đúng nguyên văn. Phần ghi đè được áp sau vòng chọn và có đủ 4 assert ở script dòng 115–120. `before = dict(table)` được lưu trước khi áp.
+- **§1.2:** script dòng 123–133 kiểm hai điều: thứ tự mã khi gọi kèm `include_details=True` trùng với `cands`, và `from` không giảm (`None` coi là `date.min`). Logic chọn không đổi.
+- **§1.3:** `read_intl_currencies` và `intl_region` đúng đặc tả.
+  - Regex `new NumberSymbols\(` không khớp `new CompactNumberSymbols(` ở dòng 2295 trở đi của file intl, nên không đếm trùng 119 locale.
+  - Toàn file có đúng 119 dòng `DEF_CURRENCY_CODE`.
+- **§1.5:** mọi assert đều nằm trước `open(OUT, 'w')` ở dòng 204.
+- **§2:** chú thích khớp mẫu. Dòng dài nhất 79 ký tự (đếm theo ký tự Unicode). Đã bỏ câu "Ngày lấy dữ liệu".
 
 ### Test có giá trị thật hay chỉ viết cho có?
 Có giá trị thật.
+- Log đột biến khớp bảng của Tester: (f) `+71 -2`, (g) `+70 -3`, (h) `+72 -1`, (i) `+72 -1`.
+- Với (h) và (i), test duy nhất rớt là `has the entries the plan names`. Điều này xác nhận hai dòng `expect(kRegionCurrency['BG'] / ['ZW'])` ở `test/core/money_format_test.dart` dòng 350–351 là chốt chặn duy nhất cho lỗi xoá hẳn dòng, không phải dòng thừa.
+- `bg_BG` được xếp vào nhóm "Giữ nguyên như trước khi có bảng theo vùng". Xếp vậy là đúng, vì trước khi có bảng, `bg_BG` đi qua intl `bg` và ra EUR.
+- Chú thích nhóm ở dòng 191–196 khớp số liệu Babel tôi tự tra: ZAR 1961-02-14, LSL 1980-01-22, NAD 1993-01-01, ILS 1985-09-04, JOD 1996-02-12, USD 2009-04-12, ZWG 2024-06-25.
 
-- **Đột biến:** 40/40 bị bắt, gồm:
-  - `previousMonth` ở tháng 1;
-  - `inRange` ở ngày cuối tháng;
-  - bỏ chốt `_busy`;
-  - quên huỷ subscription (bắt qua log SQL);
-  - `decimalsFor` luôn trả 2;
-  - lưới danh mục thêm 12px, đo với phông thật.
-- **Migration:** kiểm giá trị từng cột của dữ liệu cũ, không chỉ đếm dòng. CHECK được thử ở cả hai biên, bằng cả SQL thô lẫn API của Drift.
-- **Bộ quét màu:** tôi xác nhận Tester đã sửa thật.
-  - Bản hiện tại duyệt mọi widget con (`byWidgetPredicate((_) => true)`, `skipOffstage: false`).
-  - Có ca đối chứng phải thấy màu đỏ ở nút Delete (`test/widget/money_entries_test.dart`, dòng 827–844).
-  - Đột biến M16 bị bắt.
-  - Còn hở: chưa xét `ColoredBox`, `Icon`, `TextSpan`, `ShapeDecoration`. Hiện chưa có code Money nào dùng các thứ này.
-- **Chỗ test chưa phủ:** vùng không có cặp trong intl (mục 1), và cờ `button` (mục 2).
+### Bảo mật, hiệu năng, tính đúng đắn
+- **Bảo mật, hiệu năng:** không thay đổi gì. Vòng này chỉ đổi 2 giá trị trong một map `const`.
+- **Đúng đắn:** USD và EUR đều có 2 chữ số thập phân, giống ZWG và BGN, nên số tiền đã lưu theo đơn vị nhỏ nhất không bị lệch.
 
-### Có vấn đề gì về bảo mật, hiệu năng, tính đúng đắn không?
+## Các điểm điều phối viên hỏi
 
-**Bảo mật:** không có gì đáng lo.
-- App offline.
-- Mọi truy vấn đi qua Drift với tham số được bind.
-- Ghi chú bị giới hạn 60 grapheme.
-- Tiền tệ trong prefs được kiểm bằng regex trước khi dùng.
-- Không log dữ liệu người dùng.
+1. **BG ra EUR, ZW ra USD có đúng không?** Đúng.
+   - Babel 2.18.0 (CLDR 47) cho BG chỉ có BGN, `from` 1999-07-05, không có `to`. Intl 0.20.3 thì khác:
+     - `number_symbols_data.dart` dòng 10 ghi "CLDR ver. 48";
+     - dòng 194 cho `bg` là `EUR`;
+     - `pubspec.lock` dòng 335 ghi `version: "0.20.3"`.
+   - Bulgaria dùng EUR từ 2026-01-01.
+   - ZW ra USD là lựa chọn sản phẩm, đã nêu lý do ở vòng trước. Intl không có locale nào thuộc vùng ZW, nên không có nguồn ngoài nào mâu thuẫn.
 
-**Đúng đắn**, những điểm đã kiểm:
-- Tiền lưu bằng số nguyên.
-- `formatScaled` có chia số thực, nhưng vẫn chính xác tới khoảng 1e13 đơn vị tiền. Intl tách phần nguyên rồi làm tròn phần lẻ, nên ví dụ 1005/100 vẫn ra 10.05.
-- JPY 0 chữ số thập phân, KWD 3 chữ số.
-- `previousMonth` ở tháng 1 ra tháng 12 năm trước. Ngày cuối tháng tính bằng `DateTime.utc(y, m+1, 0)`.
-- `totalsByCategory`: tổng bằng nhau thì xếp theo thứ tự enum.
-- Qua nửa đêm: cùng tháng thì chỉ `setState`; sang tháng khác thì nghe lại stream, kể cả khi đồng hồ lùi.
-- Ngày so bằng chuỗi ISO.
+2. **Chú thích đầu file có chính xác không?** Có.
+   - CLDR 47 là của Babel, CLDR 48 là của intl 0.20.3. Cả hai số đều đúng.
+   - Danh sách ghi đè khớp `OVERRIDES`.
+   - 2026-10-02 được ghi rõ là ngày truy vấn.
+   - Câu "Babel trả ứng viên theo thứ tự `from`" đúng: script assert điều này cho cả 7 vùng nhiều ứng viên, và lần chạy không hỏng assert.
+   - Câu "nếu có từ hai mã bắt đầu bằng mã vùng thì cũng lấy mã có `from` sớm nhất" đúng với `own[0]`, vì `own` giữ thứ tự của `cands`.
 
-**Vòng đời:**
-- `dispose` huỷ cả hai subscription và gỡ listener `today`.
-- Có kiểm `mounted` sau mọi `await`.
-- `Navigator` và `l10n` được lấy trước `await`.
-- `_busy` đứng đầu `_save`, `_pickDate`, `_editNote`, `_delete`, và được bật trước hộp thoại.
-- Lúc route đang đóng, `_busy` đã nhả nhưng không bấm lại được, vì `ModalRoute` chặn chạm khi animation đang chạy ngược.
+3. **Bước đối chiếu với intl có đúng và đủ không?**
+   - **Đúng:** cách đối chiếu độc lập của tôi cho cùng kết quả: trước ghi đè chỉ lệch `bg (BG): BGN và EUR`, sau ghi đè 0 lệch. `es_419` bị bỏ vì là vùng số. Các locale `in`, `iw`, `tl`, `no`, `no_NO`, `sr_Latn` đều ra đúng vùng.
+   - **Khi đổi Babel thì bắt được:**
+     - script dừng ngay ở dòng 14 (`assert babel.__version__ == '2.18.0'`);
+     - sau khi nâng assert, nếu CLDR mới đã có BG là EUR thì dòng 119 dừng với "ghi đè thừa: BG".
+   - **Khi đổi intl thì chưa bắt được.** Xem mục "Nên làm sau", điểm 1 và 2.
 
-**Hiệu năng:** ổn ở quy mô cá nhân.
-- `MoneyFormat` và `NumberFormat` có cache.
-- Tab Money chỉ đọc hai tháng và 5 dòng gần nhất.
-- Màn Expenses đọc mọi dòng rồi gom trong bộ nhớ; `ListView.builder` chỉ dựng phần đang hiện. Khi có hàng chục nghìn dòng thì nên phân trang.
+4. **Ghi đè thừa thì script có dừng không?** Có, và dừng trước khi ghi file. Tôi đã thử trong bộ nhớ:
+   - thêm `'US': ('USD', …)` thì ra "ghi đè thừa: US";
+   - thêm `'PA': ('PAB', …)` thì ra "ghi đè thừa: PA";
+   - thêm `'XQ': ('EUR', …)` thì ra "ghi đè cho vùng không có trong bảng: XQ".
 
-## Các câu điều phối viên hỏi
+5. **Test mới có giá trị thật không?** Có, xem phần "Ba câu hỏi" ở trên.
 
-**Máy `de_DE` hiện "€12.40":** chấp nhận được, không phải lỗi.
-- Q2 đã chốt "cách viết số theo locale định dạng của app, cùng quy tắc với ngày tháng".
-- App chỉ có `en`, nên ngày là "Oct 2" và số là "€12.40", hai thứ nhất quán với nhau.
-- Khi thêm bản dịch `de`, `formatLocaleTag` tự trả `de_DE`, và số sẽ thành "12,40 €".
-- Phần sai thật nằm ở việc chọn tiền tệ (mục 1), không ở cách viết số.
+6. **Có hồi quy nào khác không?** Không.
+   - Diff bảng cũ và mới chỉ có 2 dòng giá trị.
+   - Các ca phải giữ nguyên đều vẫn qua: `en_US`, `de_DE`, `ja_JP`, `vi_VN`, `en_GB`, `bg_BG`, `xx`, `xx_YY`, `en_PA`.
+   - +1244, 0 rớt ở cả hai múi giờ (theo log).
 
-**Kiểm bố cục bằng `FontLoader`:** hợp lý.
-- Có ca đối chứng chứng minh phông thật đã nạp: nhãn "Groceries" rộng dưới 70 và nằm trên một dòng.
-- Tách thành file riêng nên không ảnh hưởng các test dùng Ahem.
-- Đột biến M31 bị bắt.
-- Giới hạn: chỉ dư 8px, và phép đo không có inset hệ thống. Trên máy 360×800 thật, thanh trạng thái 24px và thanh điều hướng 24–48px làm vùng cuộn hụt 48–72px. Hàng Date/Note bị che một phần và phải cuộn.
-- Tiêu chí của kế hoạch đạt đúng theo chữ, nhưng chưa đạt ý định "nhìn thấy hết mà không cuộn". Người dùng quyết có siết hay không. Nếu siết, có thể lấy lại khoảng 40px:
-  - đĩa `IconTile` 64 → 56;
-  - phím keypad 56 → 52;
-  - đệm đáy `s6` → `s4`.
-- Không bắt buộc ở vòng này.
+## Nên làm sau (không chặn, ngoài phạm vi vòng này)
 
-**Bốn quan sát ở mục 8 của Tester:**
-1. Thiếu cờ `button`: đồng ý, đã chuyển thành mục cần sửa 2.
-2. Ô ghi chú bỏ ký tự xuống dòng khi dán: đúng, nhưng không sửa được bằng `inputFormatters`.
-   - `EditableText` luôn đặt `singleLineFormatter` trước các formatter khác (`flutter/lib/src/widgets/editable_text.dart`, dòng 967–972), nên formatter riêng không bao giờ thấy ký tự xuống dòng.
-   - Muốn sửa phải chuyển sang ô nhiều dòng như Check-in.
-   - Hậu quả nhỏ, để sau.
-3. Trạng thái Save mờ không quan sát được: chấp nhận. Hành vi đã được khoá bằng các test bấm nhiều lần (thêm, sửa, sau khi lỗi) và đột biến M08.
-4. graphify chưa cập nhật:
-   - `graphify-out/` nằm trong `.gitignore`.
-   - Đồ thị được dựng lúc 12:09, sau lần sửa `lib/` cuối (11:57), nên chỉ thiếu các file test mới.
-   - Điều phối viên chạy `graphify update .` sau vòng sửa là đủ.
+1. **`SP/gen_region_currency.py` dòng 18–20:** `INTL_SYMBOLS` ghim cứng `intl-0.20.3`, và script không đọc `pubspec.lock`.
+   - Trong khi đó `pubspec.yaml` dòng 19 để `intl: any`, còn `flutter_localizations` ghi `intl: ^0.20.3`. Nên chỉ cần `flutter pub upgrade` hoặc nâng Flutter là intl có thể đổi phiên bản mà không ai chạy lại script.
+   - Kể cả khi có người chạy lại, script vẫn đọc bản 0.20.3 trong cache, và chú thích dòng 10 vẫn ghi "intl 0.20.3 của app dùng", tức là sai.
+   - **Cách sửa:** đọc `version:` của khối `intl:` trong `/home/user/mekoke/pubspec.lock`, rồi dựng đường dẫn từ đó, hoặc assert nó khớp với `intl_version`.
 
-## Ghi nhận cho các giai đoạn sau (không chặn)
-- **Tiền tệ có 4 chữ số thập phân (CLF, UYW):** 9 chữ số phần nguyên cộng 4 chữ số thập phân vượt `kMaxAmountMinor`, nên Save sẽ báo lỗi. Hiện không xảy ra được, vì không vùng nào mặc định ra hai mã này. Khi làm màn chọn tiền tệ ở GĐ5, giới hạn nhập theo `kMaxAmountMinor` hoặc loại hai mã này.
-- **Đổi tiền tệ ở GĐ5:** phải quy đổi `amountMinor` khi số chữ số thập phân khác nhau, hoặc chặn việc đổi khi đã có dữ liệu.
+2. **Script dòng 150–155:** lệch sau ghi đè chỉ được in ra (đúng §1.3 của kế hoạch), nên phải có người đọc output mới thấy.
+   - **Cách sửa:** thêm `EXPLAINED_MISMATCHES: dict[str, str]` (locale → lý do (B) hoặc (C)), rồi đặt hai assert trước bước ghi file:
+     - mọi locale trong `mismatch_after` phải nằm trong danh sách này;
+     - mọi khoá trong danh sách phải vẫn còn lệch, để danh sách không bị thừa.
+
+3. **Script dòng 180:** câu "CLDR {cldr} cũ hơn CLDR {intl_cldr}" được in vô điều kiện.
+   - **Cách sửa:** thêm `assert int(cldr) < int(intl_cldr)`, hoặc đổi câu theo điều kiện. Ngoài ra, lý do của BG ở dòng 24–25 ghi cứng "intl 0.20.3 (CLDR 48)" (Coder đã nêu).
+
+4. **Các chỗ vặt trong script:**
+   - Dòng 169: biến `cldr_text` không còn được dùng, nên xoá. Nếu `cldr` là `None` thì chú thích sẽ in "CLDR None".
+   - Dòng 178–179: ngày `date(2026, 10, 2)` và chuỗi `2026-10-02` đang là chữ cố định, nên lấy từ `DATE`.
+   - Các kiểm tra đều dùng `assert`, nên chạy `python -O` thì mất hết. Nên đổi sang `raise SystemExit(...)`.
+
+5. **Script nằm ngoài repo:** trong khi đó `region_currency.dart` lại ghi "File do script sinh, không sửa tay". Đây là quyết định của các vòng trước, nên để người dùng hoặc Planner quyết, ví dụ đưa vào `tool/gen_region_currency.py`.
+
+6. **Tuỳ chọn:** thêm test Dart so `kRegionCurrency` với `numberFormatSymbols` của intl cho các locale có vùng rõ, như `en_GB`, `de_CH`, `pt_BR`.
+   - Test này sẽ bắt được lệch khi nâng intl mà không cần script.
+   - Nó không bắt được `bg`, vì intl chỉ có `bg` không kèm vùng. Vì vậy test này không thay được dòng 350–351.
