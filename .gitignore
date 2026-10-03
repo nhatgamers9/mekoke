@@ -47,5 +47,9 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 
+# Phụ phẩm khi biên dịch web/drift_worker.js
+/web/drift_worker.js.deps
+/web/drift_worker.js.map
+
 # graphify knowledge graph (regenerate with `graphify update .`)
 graphify-out/

@@ -95,8 +95,17 @@ class MoneyEntries extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
-  static AppDatabase openDefault() =>
-      AppDatabase(driftDatabase(name: 'steady'));
+  // `web` chỉ dùng khi chạy trên trình duyệt (bản xem trước); Android bỏ qua.
+  // Hai file này nằm trong web/, cách lấy ghi ở README.
+  static AppDatabase openDefault() => AppDatabase(
+    driftDatabase(
+      name: 'steady',
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+      ),
+    ),
+  );
 
   @override
   int get schemaVersion => 3;

@@ -10,6 +10,9 @@ List<File> _dartFiles() =>
         .where((f) => f.path.endsWith('.dart'))
         .toList();
 
+/// Đường dẫn dùng `/` trên mọi máy: Windows trả về `\`, làm các phép so bên dưới trượt.
+String _posixPath(File f) => f.path.replaceAll(r'\', '/');
+
 void main() {
   test('lib/ never reads the wall clock directly', () {
     for (final f in _dartFiles()) {
@@ -24,7 +27,7 @@ void main() {
   test('raw Color(0x...) literals only live in tokens.dart', () {
     final literal = RegExp(r'Color\(\s*0x');
     for (final f in _dartFiles()) {
-      if (f.path.endsWith('core/theme/tokens.dart')) continue;
+      if (_posixPath(f).endsWith('core/theme/tokens.dart')) continue;
       expect(literal.hasMatch(f.readAsStringSync()), isFalse, reason: f.path);
     }
   });
@@ -33,7 +36,7 @@ void main() {
     // Text('Literal') hoặc Text("Literal"); chuỗi nội suy kiểu '$days' thì được.
     final literal = RegExp(r'''Text\(\s*['"][^'"$]*[A-Za-z]''');
     for (final f in _dartFiles()) {
-      if (f.path.contains('/l10n/')) continue;
+      if (_posixPath(f).contains('/l10n/')) continue;
       expect(literal.hasMatch(f.readAsStringSync()), isFalse, reason: f.path);
     }
   });
