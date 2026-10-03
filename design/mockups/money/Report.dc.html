@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · October report</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 12px 20px 24px; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="display: flex; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Steady.IconButton" variant="plain" icon="x" label="Close"></x-import>
+<h1 class="title" style="margin: 0">October</h1>
+</div>
+<x-import component-from-global-scope="Steady.FilterChips" label="Period" value="month" options="{{periods}}"></x-import>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 22px; background: var(--surface)">
+<span class="caption" style="color: var(--ink-muted)">Income</span>
+<span style="font-size: 20px; line-height: 24px; font-weight: 700">$4,000</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 22px; background: var(--surface)">
+<span class="caption" style="color: var(--ink-muted)">Spent</span>
+<span style="font-size: 20px; line-height: 24px; font-weight: 700">$2,068</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 22px; background: var(--surface)">
+<span class="caption" style="color: var(--ink-muted)">Saved</span>
+<span style="font-size: 20px; line-height: 24px; font-weight: 700">$600</span>
+</div>
+</div>
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 14px; padding: 16px; border-radius: 22px; background: var(--surface)">
+<figcaption class="headline">Spending by category</figcaption>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label">Rent</span>
+<div style="display: flex; align-items: center; gap: 8px"><span style="display: block; height: 12px; width: calc((100% - 80px) * 1); border-radius: 0 4px 4px 0; background: var(--amber)"></span><span class="label" style="font-variant-numeric: tabular-nums">$1,200</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label">Groceries</span>
+<div style="display: flex; align-items: center; gap: 8px"><span style="display: block; height: 12px; width: calc((100% - 80px) * 0.267); border-radius: 0 4px 4px 0; background: var(--amber)"></span><span class="label" style="font-variant-numeric: tabular-nums">$320</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label">Bills</span>
+<div style="display: flex; align-items: center; gap: 8px"><span style="display: block; height: 12px; width: calc((100% - 80px) * 0.175); border-radius: 0 4px 4px 0; background: var(--amber)"></span><span class="label" style="font-variant-numeric: tabular-nums">$210</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label">Eating out</span>
+<div style="display: flex; align-items: center; gap: 8px"><span style="display: block; height: 12px; width: calc((100% - 80px) * 0.153); border-radius: 0 4px 4px 0; background: var(--amber)"></span><span class="label" style="font-variant-numeric: tabular-nums">$184</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label">Fun</span>
+<div style="display: flex; align-items: center; gap: 8px"><span style="display: block; height: 12px; width: calc((100% - 80px) * 0.075); border-radius: 0 4px 4px 0; background: var(--amber)"></span><span class="label" style="font-variant-numeric: tabular-nums">$90</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="label">Transport</span>
+<div style="display: flex; align-items: center; gap: 8px"><span style="display: block; height: 12px; width: calc((100% - 80px) * 0.053); border-radius: 0 4px 4px 0; background: var(--amber)"></span><span class="label" style="font-variant-numeric: tabular-nums">$64</span></div>
+</div>
+<p class="caption" style="margin: 0; color: var(--ink-muted)">Shopping and Travel: no spending yet.</p>
+</figure>
+<a href="#" class="label" style="text-decoration: none; align-self: center">Export as CSV</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+periods: [
+{ value: 'month', label: 'This month' }, { value: 'last', label: 'Last month' }, { value: 'quarter', label: '3 months' }, { value: 'year', label: 'This year' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

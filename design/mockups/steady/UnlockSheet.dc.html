@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Steady · Unlock a Premium sound</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/steady/tokens.css">
+<link rel="stylesheet" href="ds/steady/components/bundle.css">
+<script src="ds/steady/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#f2a649}a:hover{color:#f3eee7}
+</style>
+</helmet>
+<div data-theme="dark" style="position: relative; width: 360px; height: 800px; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--font-sans)">
+<dc-import name="Main" hint-size="360px,800px"></dc-import>
+<div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0, 0, 0, 0.62)"></div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; padding: 12px 20px 32px; display: flex; flex-direction: column; gap: 16px; background: var(--surface); border-radius: 30px 30px 0 0; box-shadow: var(--shadow-sheet)">
+<div style="align-self: center; width: 40px; height: 4px; border-radius: 9999px; background: var(--line-strong)"></div>
+<div style="display: flex; align-items: center; gap: 12px; padding-top: 8px">
+<div style="display: grid; place-items: center; width: 48px; height: 48px; border-radius: 9999px; background: var(--amber-soft); color: var(--amber)">
+<x-import component-from-global-scope="Steady.Icon" name="leaf"></x-import>
+</div>
+<div style="display: flex; flex-direction: column">
+<span class="overline" style="color: var(--amber)">PREMIUM SOUND</span>
+<h2 class="title" style="margin: 0">Unlock Pink noise</h2>
+</div>
+</div>
+<p class="body" style="margin: 0; color: var(--ink-muted)">Watch a short ad to use it for the next 24 hours, or try every Premium feature free for 3 days.</p>
+<div style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px">
+<x-import component-from-global-scope="Steady.Button" variant="primary" block="{{yes}}">Try 3 days free</x-import>
+<x-import component-from-global-scope="Steady.Button" variant="secondary" block="{{yes}}" icon="play">Watch an ad · 24 hours</x-import>
+<x-import component-from-global-scope="Steady.Button" variant="ghost" block="{{yes}}">Not now</x-import>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return { yes: true };
+}
+}
+</script>
+</body>
+</html>
