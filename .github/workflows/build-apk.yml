@@ -1,0 +1,55 @@
+# Build file APK để cài thử app Steady lên điện thoại hoặc máy ảo Android.
+# Tải APK: tab Actions → lần chạy mới nhất → mục Artifacts → "steady-apk".
+name: Build APK
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.6
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test
+
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.6
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # Bản release ký bằng khoá debug (android/app/build.gradle.kts), cài thẳng được.
+      - run: flutter build apk --release
+      - name: Đặt tên file APK
+        run: |
+          short_sha="$(git rev-parse --short HEAD)"
+          mv build/app/outputs/flutter-apk/app-release.apk "steady-${short_sha}.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: steady-apk
+          path: steady-*.apk
+          retention-days: 14
