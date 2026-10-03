@@ -537,4 +537,59 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteExpenseBody =>
       'This removes it from your history. It can\'t be undone.';
+
+  @override
+  String get seePremium => 'See Premium';
+
+  @override
+  String get paywallOverline => 'STEADY PREMIUM';
+
+  @override
+  String get paywallTitle => 'Every sound, every plan, no ads';
+
+  @override
+  String get paywallBenefitSounds => 'Every sound, offline';
+
+  @override
+  String get paywallBenefitStreaks => 'Unlimited habit streaks';
+
+  @override
+  String get paywallBenefitPlans => 'Custom fasting and interval plans';
+
+  @override
+  String get paywallBenefitHistory => 'Full history and widget themes';
+
+  @override
+  String get choosePlanLabel => 'Choose a plan';
+
+  @override
+  String get planMonthly => 'Monthly';
+
+  @override
+  String get planWeekly => 'Weekly';
+
+  @override
+  String get planPerMonth => 'per month';
+
+  @override
+  String get planPerWeek => 'per week';
+
+  @override
+  String get planTrialNote => '3-day free trial';
+
+  @override
+  String get paywallCta => 'Try 3 days free';
+
+  @override
+  String get paywallUnavailable => 'Purchases aren\'t available yet.';
+
+  @override
+  String paywallTermsMonthly(String price) {
+    return 'Free for 3 days, then $price per month. Cancel anytime in Google Play.';
+  }
+
+  @override
+  String paywallTermsWeekly(String price) {
+    return 'Free for 3 days, then $price per week. Cancel anytime in Google Play.';
+  }
 }

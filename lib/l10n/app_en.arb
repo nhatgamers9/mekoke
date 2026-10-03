@@ -388,5 +388,36 @@
   },
   "deleteExpense": "Delete expense",
   "deleteExpenseTitle": "Delete this expense?",
-  "deleteExpenseBody": "This removes it from your history. It can't be undone."
+  "deleteExpenseBody": "This removes it from your history. It can't be undone.",
+  "seePremium": "See Premium",
+  "paywallOverline": "STEADY PREMIUM",
+  "paywallTitle": "Every sound, every plan, no ads",
+  "paywallBenefitSounds": "Every sound, offline",
+  "paywallBenefitStreaks": "Unlimited habit streaks",
+  "paywallBenefitPlans": "Custom fasting and interval plans",
+  "paywallBenefitHistory": "Full history and widget themes",
+  "choosePlanLabel": "Choose a plan",
+  "planMonthly": "Monthly",
+  "planWeekly": "Weekly",
+  "planPerMonth": "per month",
+  "planPerWeek": "per week",
+  "planTrialNote": "3-day free trial",
+  "paywallCta": "Try 3 days free",
+  "paywallUnavailable": "Purchases aren't available yet.",
+  "paywallTermsMonthly": "Free for 3 days, then {price} per month. Cancel anytime in Google Play.",
+  "@paywallTermsMonthly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallTermsWeekly": "Free for 3 days, then {price} per week. Cancel anytime in Google Play.",
+  "@paywallTermsWeekly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  }
 }

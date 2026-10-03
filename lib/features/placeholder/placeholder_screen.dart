@@ -5,9 +5,10 @@ import '../../core/theme/typography.dart';
 import '../../l10n/app_localizations.dart';
 
 class PlaceholderScreen extends StatelessWidget {
-  const PlaceholderScreen({super.key, required this.title});
+  const PlaceholderScreen({super.key, required this.title, this.action});
 
   final String title;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,10 @@ class PlaceholderScreen extends StatelessWidget {
             l10n.placeholderBody,
             style: SteadyText.body.copyWith(color: c.inkMuted),
           ),
+          if (action != null) ...[
+            const SizedBox(height: SteadySpace.s6),
+            action!,
+          ],
         ],
       ),
     );

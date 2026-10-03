@@ -957,6 +957,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This removes it from your history. It can\'t be undone.'**
   String get deleteExpenseBody;
+
+  /// No description provided for @seePremium.
+  ///
+  /// In en, this message translates to:
+  /// **'See Premium'**
+  String get seePremium;
+
+  /// No description provided for @paywallOverline.
+  ///
+  /// In en, this message translates to:
+  /// **'STEADY PREMIUM'**
+  String get paywallOverline;
+
+  /// No description provided for @paywallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Every sound, every plan, no ads'**
+  String get paywallTitle;
+
+  /// No description provided for @paywallBenefitSounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Every sound, offline'**
+  String get paywallBenefitSounds;
+
+  /// No description provided for @paywallBenefitStreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited habit streaks'**
+  String get paywallBenefitStreaks;
+
+  /// No description provided for @paywallBenefitPlans.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom fasting and interval plans'**
+  String get paywallBenefitPlans;
+
+  /// No description provided for @paywallBenefitHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Full history and widget themes'**
+  String get paywallBenefitHistory;
+
+  /// No description provided for @choosePlanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a plan'**
+  String get choosePlanLabel;
+
+  /// No description provided for @planMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get planMonthly;
+
+  /// No description provided for @planWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get planWeekly;
+
+  /// No description provided for @planPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'per month'**
+  String get planPerMonth;
+
+  /// No description provided for @planPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'per week'**
+  String get planPerWeek;
+
+  /// No description provided for @planTrialNote.
+  ///
+  /// In en, this message translates to:
+  /// **'3-day free trial'**
+  String get planTrialNote;
+
+  /// No description provided for @paywallCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Try 3 days free'**
+  String get paywallCta;
+
+  /// No description provided for @paywallUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases aren\'t available yet.'**
+  String get paywallUnavailable;
+
+  /// No description provided for @paywallTermsMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Free for 3 days, then {price} per month. Cancel anytime in Google Play.'**
+  String paywallTermsMonthly(String price);
+
+  /// No description provided for @paywallTermsWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Free for 3 days, then {price} per week. Cancel anytime in Google Play.'**
+  String paywallTermsWeekly(String price);
 }
 
 class _AppLocalizationsDelegate

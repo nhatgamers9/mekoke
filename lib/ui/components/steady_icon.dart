@@ -37,6 +37,7 @@ abstract final class SteadyIcons {
   static const plane = 'plane';
   static const smartphone = 'smartphone';
   static const graduationCap = 'graduation-cap';
+  static const check = 'check';
 }
 
 class SteadyIcon extends StatelessWidget {

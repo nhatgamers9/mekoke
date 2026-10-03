@@ -614,4 +614,110 @@ void main() {
       }
     });
   });
+
+  group('paywall copy (section 3.6 of the plan)', () {
+    final en = AppLocalizationsEn();
+
+    // Khoá ARB (không tham số) và nguyên văn.
+    const plain = {
+      'seePremium': 'See Premium',
+      'paywallOverline': 'STEADY PREMIUM',
+      'paywallTitle': 'Every sound, every plan, no ads',
+      'paywallBenefitSounds': 'Every sound, offline',
+      'paywallBenefitStreaks': 'Unlimited habit streaks',
+      'paywallBenefitPlans': 'Custom fasting and interval plans',
+      'paywallBenefitHistory': 'Full history and widget themes',
+      'choosePlanLabel': 'Choose a plan',
+      'planMonthly': 'Monthly',
+      'planWeekly': 'Weekly',
+      'planPerMonth': 'per month',
+      'planPerWeek': 'per week',
+      'planTrialNote': '3-day free trial',
+      'paywallCta': 'Try 3 days free',
+      'paywallUnavailable': "Purchases aren't available yet.",
+    };
+
+    test('the entry button, header and the four benefits', () {
+      expect(en.seePremium, 'See Premium');
+      expect(en.paywallOverline, 'STEADY PREMIUM');
+      expect(en.paywallTitle, 'Every sound, every plan, no ads');
+      expect(
+        [
+          en.paywallBenefitSounds,
+          en.paywallBenefitStreaks,
+          en.paywallBenefitPlans,
+          en.paywallBenefitHistory,
+        ],
+        [
+          'Every sound, offline',
+          'Unlimited habit streaks',
+          'Custom fasting and interval plans',
+          'Full history and widget themes',
+        ],
+      );
+    });
+
+    test('the plans, the button and the unavailable line', () {
+      expect(en.choosePlanLabel, 'Choose a plan');
+      expect([en.planMonthly, en.planWeekly], ['Monthly', 'Weekly']);
+      expect([en.planPerMonth, en.planPerWeek], ['per month', 'per week']);
+      expect(en.planTrialNote, '3-day free trial');
+      expect(en.paywallCta, 'Try 3 days free');
+      expect(en.paywallUnavailable, "Purchases aren't available yet.");
+      expect(en.close, 'Close', reason: 'the X button reuses the old key');
+    });
+
+    test('the terms lines carry the price as given', () {
+      expect(
+        en.paywallTermsMonthly(r'$9.99'),
+        r'Free for 3 days, then $9.99 per month. Cancel anytime in Google Play.',
+      );
+      expect(
+        en.paywallTermsWeekly(r'$4.99'),
+        r'Free for 3 days, then $4.99 per week. Cancel anytime in Google Play.',
+      );
+      expect(en.paywallTermsMonthly('9,99 €'), contains('then 9,99 € per'));
+      expect(en.paywallTermsWeekly('US\$4.99'), contains(r'US$4.99'));
+    });
+
+    test('the ARB file holds the same 15 plain texts and 2 terms lines', () {
+      final arb = jsonDecode(
+        File('lib/l10n/app_en.arb').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      for (final entry in plain.entries) {
+        expect(arb[entry.key], entry.value, reason: entry.key);
+      }
+      expect(
+        arb['paywallTermsMonthly'],
+        'Free for 3 days, then {price} per month. Cancel anytime in Google Play.',
+      );
+      expect(
+        arb['paywallTermsWeekly'],
+        'Free for 3 days, then {price} per week. Cancel anytime in Google Play.',
+      );
+    });
+
+    test('the terms keys declare one String placeholder named price', () {
+      final arb = jsonDecode(
+        File('lib/l10n/app_en.arb').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      for (final key in ['paywallTermsMonthly', 'paywallTermsWeekly']) {
+        final meta = arb['@$key'] as Map<String, dynamic>;
+        final placeholders = meta['placeholders'] as Map<String, dynamic>;
+        expect(placeholders.keys, ['price'], reason: key);
+        expect(
+          (placeholders['price'] as Map<String, dynamic>)['type'],
+          'String',
+          reason: key,
+        );
+      }
+    });
+
+    test('SteadyIcons.check is "check" and has its svg file', () {
+      expect(SteadyIcons.check, 'check');
+      final file = File('assets/icons/check.svg');
+      expect(file.existsSync(), isTrue);
+      expect(file.readAsStringSync(), contains('<svg'));
+    });
+  });
 }

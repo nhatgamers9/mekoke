@@ -5,11 +5,13 @@ import '../../core/services.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/time/today_notifier.dart';
 import '../../l10n/app_localizations.dart';
+import '../../ui/components/steady_button.dart';
 import '../../ui/components/steady_icon.dart';
 import '../../ui/components/steady_tab_bar.dart';
 import '../check_in/check_in_screen.dart';
 import '../money/money_screen.dart';
 import '../placeholder/placeholder_screen.dart';
+import '../premium/paywall_screen.dart';
 import '../streaks/streaks_screen.dart';
 import '../timer/timer_screen.dart';
 
@@ -36,6 +38,11 @@ class _HomeShellState extends State<HomeShell> {
     super.dispose();
   }
 
+  void _openPaywall() {
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const PaywallScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = SteadyColors.of(context);
@@ -58,7 +65,13 @@ class _HomeShellState extends State<HomeShell> {
             child: IndexedStack(
               index: _index,
               children: [
-                PlaceholderScreen(title: l10n.tabFocus),
+                PlaceholderScreen(
+                  title: l10n.tabFocus,
+                  action: SteadyButton(
+                    label: l10n.seePremium,
+                    onPressed: _openPaywall,
+                  ),
+                ),
                 TimerScreen(isActive: _index == 1),
                 const StreaksScreen(),
                 MoneyScreen(isActive: _index == 3),

@@ -1,236 +1,273 @@
-# Kế hoạch: vòng sửa tiếp, tiền tệ theo vùng (BG ra EUR, ZW ra USD)
+# Kế hoạch: màn paywall xem thử, Monthly $9.99 và Weekly $4.99 (Steady)
 
-Yêu cầu (/ship): "sửa tiếp". Phạm vi là đúng 2 việc "Cần sửa" trong bản đánh giá vòng trước, kèm test.
-- Mọi đường dẫn tương đối tính từ `/home/user/mekoke/`. Viết tắt `SP` = `/tmp/claude-0/-home-user-mekoke/cc7bfc32-2202-5695-aafd-72552f98ca86/scratchpad`.
-- Nhánh `claude/vigilant-archimedes-0yt6az`, mốc `267a46a`. Thay đổi của vòng trước chưa commit (3 file `lib/`, 3 file `test/`).
-- Không commit, không push, không tạo PR, không đổi nhánh.
-- Không có câu hỏi bỏ ngỏ. Panama giữ `PAB`, vì người dùng không yêu cầu đổi.
+Gốc repo: `D:\New folder\mekoke\mekoke`. Mọi đường dẫn dưới đây tính từ gốc repo.
 
----
+Yêu cầu vòng này: "1A 2A 3A 4A", là câu trả lời cho bốn câu hỏi của vòng trước (yêu cầu gốc: "cho giá tuần là 4.99 và gói tháng là 9.99"). Đã chốt:
 
-## 0. Phạm vi
+- Dựng màn paywall trong app để xem và bấm thử, chưa thu tiền. Hai gói: Monthly 9.99 mỗi tháng, Weekly 4.99 mỗi tuần. Bấm nút mua thì hiện dòng báo chưa mua được. Giá ghi cứng trong app.
+- Tiền là đô la Mỹ: máy `en_US` hiện `$9.99` và `$4.99`.
+- Mở paywall bằng nút chữ "See Premium" trên tab Focus.
+- Cả hai gói dùng thử 3 ngày: thẻ gói ghi "3-day free trial", nút ghi "Try 3 days free".
+- Bố cục theo `design/mockups/steady/Paywall.dc.html`, dựng trên giao diện Steady tối đang có trong `lib/` (token và component sẵn có). Monthly ở trên và được chọn sẵn, Weekly ở dưới, không nhãn (badge). Tiêu đề và bốn dòng lợi ích chép nguyên văn mockup.
 
-**Làm:**
-1. Bảng `kRegionCurrency` phải cho `BG` ra `EUR` và `ZW` ra `USD`. Sửa bằng cách thêm ghi đè vào script rồi sinh lại file.
-2. Script tự đối chiếu bảng với `DEF_CURRENCY_CODE` của intl 0.20.3.
-3. Sửa chú thích đầu file `region_currency.dart`.
-4. Sửa test cho khớp.
+## 1. Phạm vi
 
-**Không làm:**
-- Không sửa tay `lib/core/format/region_currency.dart`.
-- Không sửa `lib/core/format/money_format.dart`, `lib/ui/components/transaction_row.dart`, hay bất kỳ file `lib/` nào khác.
-- Không đổi phiên bản Babel, không đổi nguồn dữ liệu (giữ Babel 2.18.0 / CLDR 47).
-- Không đổi quy tắc chọn ở vùng nhiều tiền tệ. Không thêm ghi đè nào khác (PA giữ `PAB`), trừ khi §1.3 bắt buộc.
-- Không sửa `pubspec.*`, `test/widget/money_screen_test.dart`, `test/ui/money_components_test.dart`.
+Không làm ở vòng này: mua thật, trạng thái Premium, khoá tính năng, "Restore purchase", link Terms và Privacy, sheet mở khoá, màn giới thiệu, đăng nhập và đăng ký. Không thêm gói thanh toán nào vào `pubspec.yaml`. Paywall chỉ có đúng các phần tử ở mục 3.4, không thêm phần tử nào khác của mockup hay hệ thiết kế.
 
----
+Không đụng: `pubspec.yaml`, `android/`, `lib/main.dart`, `lib/core/`, `lib/data/`, `assets/`, `design/`, `README.md`, `web/`, `tool/`, `.gitignore`, `.metadata`, `analysis_options.yaml`. Cây làm việc đang có thay đổi chưa commit của việc khác ("bản xem trước trên web") ở `lib/data/database.dart`, `lib/main.dart`, `test/static_rules_test.dart`, `README.md`, `.gitignore`, `.metadata`, `analysis_options.yaml`, `web/`, `tool/`: không sửa, không hoàn tác.
 
-## 1. Coder: script `SP/gen_region_currency.py` (ngoài repo, không commit)
+## 2. Môi trường và lệnh
 
-Chạy bằng `SP/ship-run5/bvenv/bin/python SP/gen_region_currency.py`. Script chỉ được ghi đúng một file trong repo: `lib/core/format/region_currency.dart`.
+Phần này do phiên điều phối cung cấp; phiên lập kế hoạch không có shell nên chưa tự chạy.
 
-**Trước khi sửa:** chép file hiện tại sang `SP/region_currency.before.dart` để so sánh ở §1.5.
+- Flutter 3.47.6 không có trên PATH. Gọi bằng đường dẫn đầy đủ: `C:\Users\nhatg\.local\flutter\bin\flutter.bat` và `C:\Users\nhatg\.local\flutter\bin\dart.bat`.
+- Trước mỗi lệnh phải đặt `PUB_CACHE=C:\Users\nhatg\.local\pub-cache` và đứng ở gốc repo (đường dẫn có dấu cách, nhớ đặt trong dấu nháy).
+  - PowerShell: `$env:PUB_CACHE='C:\Users\nhatg\.local\pub-cache'; Set-Location 'D:\New folder\mekoke\mekoke'; & 'C:\Users\nhatg\.local\flutter\bin\flutter.bat' analyze`
+  - Bash: `cd "/d/New folder/mekoke/mekoke" && PUB_CACHE='C:\Users\nhatg\.local\pub-cache' "/c/Users/nhatg/.local/flutter/bin/flutter.bat" analyze`
+- Bộ kiểm của CI (`.github/workflows/build-apk.yml`), phải qua cả ba trước khi xong:
+  1. `dart format --output=none --set-exit-if-changed lib test`
+  2. `flutter analyze` (mức info cũng làm rớt)
+  3. `flutter test` (hiện 1244/1244 qua, chạy hết khoảng 4 đến 5 phút)
+- Sau khi sửa `lib/l10n/app_en.arb` phải chạy `flutter gen-l10n` để sinh lại `lib/l10n/app_localizations.dart` và `lib/l10n/app_localizations_en.dart`. Không sửa tay hai file sinh ra. Nếu bước 1 báo hai file này lệch định dạng thì chạy `dart format lib/l10n`.
+- Một bản xem trước web đang chạy ở `http://localhost:5317`, tự hot reload khi file trong `lib/` đổi. Không tắt, không khởi động lại nó. Không chạy `flutter run`. Tuyệt đối không chạy `flutter create`.
 
-### 1.1 Ghi đè
-Thêm hằng sau ở gần đầu file (cạnh `DATE`):
-```python
-OVERRIDES: dict[str, tuple[str, str]] = {
-    'BG': ('EUR', 'Bulgaria dùng EUR từ 2026-01-01; CLDR 47 chưa có, intl 0.20.3 (CLDR 48) đã có.'),
-    'ZW': ('USD', 'phần lớn giao dịch hằng ngày ở Zimbabwe bằng USD; ZWG không neo với USD và đã mất giá mạnh từ 2024.'),
+## 3. Việc của Coder
+
+Coder không tạo và không sửa file nào trong `test/`. Test mới do Tester viết (mục 6). Test hiện có rớt thì sửa mã trong `lib/`, không sửa test.
+
+### 3.1 File
+
+Tạo:
+
+| File | Nội dung |
+|---|---|
+| `lib/features/premium/premium_plans.dart` | Dữ liệu hai gói, nơi duy nhất ghi hai mức giá. |
+| `lib/ui/components/plan_option.dart` | Component `PlanOption`. |
+| `lib/features/premium/paywall_screen.dart` | Màn paywall. |
+
+Sửa:
+
+| File | Việc |
+|---|---|
+| `lib/ui/components/steady_icon.dart` | Thêm `static const check = 'check';` vào cuối danh sách hằng của `SteadyIcons` (file `assets/icons/check.svg` đã có). |
+| `lib/features/placeholder/placeholder_screen.dart` | Thêm tham số tuỳ chọn `action` (mục 3.5). |
+| `lib/features/shell/home_shell.dart` | Thêm `_openPaywall()` và truyền nút vào `PlaceholderScreen` (mục 3.5). |
+| `lib/l10n/app_en.arb` | Thêm các khoá ở mục 3.6 vào cuối file, rồi chạy `flutter gen-l10n`. |
+
+### 3.2 `lib/features/premium/premium_plans.dart`
+
+File thuần Dart, không import Flutter.
+
+```dart
+enum PlanPeriod { monthly, weekly }
+
+class PremiumPlan {
+  const PremiumPlan({required this.period, required this.priceMinor});
+  final PlanPeriod period;
+  final int priceMinor; // đơn vị nhỏ nhất của kPlanCurrency: 999 là 9.99
+}
+
+const String kPlanCurrency = 'USD'; // mã ISO 4217
+
+// Thứ tự hiển thị; phần tử đầu được chọn sẵn.
+const List<PremiumPlan> kPremiumPlans = [
+  PremiumPlan(period: PlanPeriod.monthly, priceMinor: 999),
+  PremiumPlan(period: PlanPeriod.weekly, priceMinor: 499),
+];
+```
+
+Chú thích đầu file (tiếng Việt, như các file khác trong `lib/`): đây là giá tạm để hiển thị; khi nối cửa hàng thì thay bằng giá cửa hàng trả về.
+
+### 3.3 `lib/ui/components/plan_option.dart`
+
+```dart
+class PlanOption extends StatelessWidget {
+  const PlanOption({
+    super.key,
+    required this.title,
+    required this.price, // đã định dạng; component không tự định dạng
+    required this.period,
+    required this.selected,
+    required this.onTap,
+    this.note,
+  });
+
+  final String title;
+  final String price;
+  final String period;
+  final bool selected;
+  final VoidCallback onTap;
+  final String? note;
 }
 ```
-Áp ghi đè **sau** vòng lặp chọn, theo các bước:
-1. Lưu `before = dict(table)`.
-2. Với mỗi `R` trong `OVERRIDES`, `assert`:
-   - `R in table`;
-   - mã ghi đè khớp `^[A-Z]{3}$`, khác `XXX`, và `get_currency_precision(mã) <= 3`;
-   - `table[R] != mã`. Nếu bằng nhau thì ghi đè đã thừa: script phải dừng với thông báo "ghi đè thừa: R".
-3. Gán `table[R] = mã`.
 
-Danh sách 7 vùng nhiều ứng viên (`multi`) vẫn in mã do quy tắc chọn ra, như cũ. Ghi đè được in riêng ở §1.4.
+- Thẻ: `Material(color: surface, shape: RoundedRectangleBorder(bo SteadyRadius.lg, BorderSide rộng 2 màu lineStrong; khi chọn màu amber))` bọc `InkWell(onTap, customBorder: cùng shape)`, bên trong đệm `SteadySpace.s4` mọi phía. Cả thẻ bấm được. Cao tối thiểu `SteadySize.tap`.
+- Nội dung là `Row` canh giữa theo chiều dọc: ô radio, `SizedBox(width: s3)`, `Expanded(cột chữ)`, `SizedBox(width: s3)`, cột giá.
+- Ô radio: tròn 24×24, viền 2 màu `lineStrong`, không nền. Khi chọn: nền và viền `amber`, bên trong là `SteadyIcon(SteadyIcons.check, size: 16, color: onAmber)`. Chưa chọn thì không có icon.
+- Cột chữ, canh trái: `title` kiểu `SteadyText.headline` màu `ink`; nếu có `note` thì cách 2 px rồi `note` kiểu `label` màu `inkMuted`. Không đặt `maxLines`, không ellipsis: chữ dài thì xuống dòng.
+- Cột giá, canh phải, rộng theo nội dung (không `Expanded`, không `Flexible`): `price` kiểu `bodyStrong` màu `ink`; dưới là `period` kiểu `caption` màu `inkMuted`. Mỗi dòng `maxLines: 1`, không ellipsis.
+- Semantics bọc ngoài cùng, chép `lib/ui/components/icon_tile.dart`: `button: true`, `selected: selected`, `inMutuallyExclusiveGroup: true`, `onTap: onTap`, `excludeSemantics: true`, `label` là `title`, `price`, `period`, rồi `note` (nếu có), nối bằng `', '`.
+- Không dùng `LayoutBuilder` trong component này (mục 4, số 10).
+- Không thêm tham số `badge` của hệ thiết kế: vòng này không màn nào dùng.
 
-### 1.2 Thứ tự `from` (để chú thích ở §2 nói đúng sự thật)
-- Với mỗi vùng trong `multi`, lấy thêm `get_territory_currencies(R, DATE, tender=True, non_tender=False, include_details=True)`, giữ lại đúng các mã có trong `cands`.
-- `assert` rằng ngày `from` không giảm theo thứ tự Babel trả về. `from` là `None` thì coi là sớm nhất.
-- Khi in vùng nhiều ứng viên, in kèm `from` của từng mã.
-- Không đổi logic chọn.
+### 3.4 `lib/features/premium/paywall_screen.dart`
 
-### 1.3 Đối chiếu với intl 0.20.3
-- Đặt `INTL_SYMBOLS = '/root/.pub-cache/hosted/pub.dev/intl-0.20.3/lib/number_symbols_data.dart'`.
-- `def read_intl_currencies(path: str) -> tuple[str, dict[str, str]]`:
-  - đọc số CLDR bằng regex `File generated from CLDR ver\. (\d+)`. `assert` tìm thấy số này;
-  - duyệt từng dòng:
-    - dòng khớp `^  "([A-Za-z0-9_]+)": new NumberSymbols\(` mở một locale mới;
-    - dòng khớp `DEF_CURRENCY_CODE: '([A-Z]{3})'` gán mã cho locale đang mở;
-  - `assert` mọi locale đều có mã. Số locale phải là 119.
-- `def intl_region(locale: str) -> tuple[str | None, str]` trả về `(vùng, cách lấy)`:
-  1. `parts = locale.split('_')`, `rest = parts[1:]`. Nếu `rest[0]` gồm đúng 4 chữ cái (script) thì bỏ phần đó.
-  2. Nếu còn `rest`:
-     - `rest[0]` khớp `^[A-Z]{2}$`: trả `(rest[0], 'vùng')`;
-     - không khớp (ví dụ `419`): trả `(None, 'vùng số')`.
-  3. Nếu không còn `rest` (chỉ có ngôn ngữ, hoặc ngôn ngữ + script như `sr_Latn`):
-     - `ls = get_global('likely_subtags')`;
-     - `lang = get_global('language_aliases').get(parts[0], parts[0])`. Bước này để `in`, `iw`, `tl` ra `id`, `he`, `fil`;
-     - `hit = ls.get(locale) or ls.get(lang)`;
-     - có `hit` thì trả `(babel.core.parse_locale(hit)[1], 'likely')`, không có thì trả `(None, 'không rõ')`.
-- Với mỗi locale có vùng `R` khác `None`, so mã intl với `before.get(R)` và với `table.get(R)`. `R` không có trong bảng cũng tính là lệch.
-- Script **không dừng** vì lệch, chỉ in ra (xem §1.4).
-
-**Kết quả mong đợi** (bản đánh giá đã tự đo):
-- trước ghi đè, lệch đúng một locale: `bg` (BG: bảng BGN, intl EUR);
-- sau ghi đè: 0 lệch;
-- bỏ qua vì vùng số: `es_419`;
-- không rõ vùng: 0 locale.
-
-**Nếu kết quả khác mong đợi**, xử lý từng chỗ lệch còn lại sau ghi đè như sau, và ghi rõ vào `thay-doi.md`:
-- **(A) Thêm vào `OVERRIDES`, theo giá trị của intl**, khi mã của intl là tiền đang lưu hành thật ở `R` vào ngày 2026-10-02. Chỉ cần một trong hai điều kiện:
-  - mã đó có trong danh sách ứng viên Babel của `R`;
-  - hoặc có một lần đổi tiền nêu được tên và ngày hiệu lực, không muộn hơn 2026-10-02, mà CLDR 47 chưa có (giống BG).
-
-  Lý do ghi một dòng trong `OVERRIDES`, rồi sinh lại.
-- **(B) Không ghi đè, chỉ giải thích**, khi lệch là vì locale chỉ có ngôn ngữ, còn intl gán tiền của một vùng khác với vùng mà `likely_subtags` trả về. Khi đó bảng vẫn đúng cho `R`.
-- **(C) Locale ra `'không rõ'`, hoặc không xếp được vào (A) hay (B)**: không ghi đè. Ghi vào mục "Lệch chưa xử lý" của `thay-doi.md` để Reviewer quyết.
-
-### 1.4 Phần in ra
-Giữ mọi dòng in cũ, thêm các phần sau:
-- dòng phiên bản: `Babel 2.18.0, CLDR 47; intl 0.20.3, CLDR <số đọc được>`;
-- `Ghi đè (n):`, mỗi dòng một vùng: `R: <before[R]> -> <mã> (<lý do>)`;
-- vùng nhiều ứng viên, kèm `from` (§1.2);
-- `Đối chiếu intl: <số locale> locale`, rồi bốn danh sách:
-  - "Lệch trước ghi đè", mỗi dòng: `locale (R, cách lấy): bảng X, intl Y`;
-  - "Lệch còn lại sau ghi đè";
-  - "Bỏ qua vì vùng số";
-  - "Không rõ vùng";
-- phần "Tra bảng" có thêm `BG` và `ZW`.
-
-### 1.5 Sinh lại và so sánh
-1. Thứ tự trong script: chọn, rồi ghi đè (§1.1), rồi assert `from` (§1.2), rồi đối chiếu intl (§1.3), rồi ghi file, rồi in. Bất kỳ `assert` nào hỏng thì script dừng và không ghi file.
-2. Chạy `dart format lib`.
-3. Chạy `diff SP/region_currency.before.dart lib/core/format/region_currency.dart`. Kết quả chỉ được khác ở:
-   - khối chú thích `///`;
-   - đúng 2 dòng: `'BG': 'EUR',` và `'ZW': 'USD',`.
-
-   Nếu §1.3 sinh thêm ghi đè thì có thêm đúng các dòng đó. Bảng vẫn 255 mục.
-
----
-
-## 2. Chú thích đầu `lib/core/format/region_currency.dart` (do script sinh)
-
-- Giữ nguyên các đoạn hiện có về: file do script sinh; khoá và giá trị; vùng không có tiền; mã hơn 3 chữ số thập phân.
-- Sửa đoạn "Nguồn" (dòng 6–9 hiện tại) và đoạn "Vùng có nhiều tiền tệ" (dòng 11–14) thành nội dung dưới đây:
-  - ngắt dòng không quá 80 cột như hiện tại;
-  - số CLDR, phiên bản Babel và intl lấy từ biến;
-  - danh sách gạch đầu dòng sinh từ `OVERRIDES`.
-- Bỏ hẳn câu "Ngày lấy dữ liệu: 2026-10-02."
-
-```
-/// Nguồn: CLDR 47 (`supplementalData`, `currencyData`), lấy qua thư viện
-/// Python Babel 2.18.0, bằng lệnh `get_territory_currencies(R,
-/// date(2026, 10, 2), tender=True, non_tender=False)` cho mỗi vùng `R`.
-/// 2026-10-02 chỉ là ngày truy vấn truyền cho Babel, không phải ngày cập nhật
-/// dữ liệu. CLDR 47 cũ hơn CLDR 48 mà intl 0.20.3 của app dùng; script đối
-/// chiếu bảng với `DEF_CURRENCY_CODE` của từng locale intl theo vùng của
-/// locale đó.
-///
-/// Ghi đè sau bước chọn (thắng dữ liệu CLDR):
-/// - `BG` ra `EUR`: Bulgaria dùng EUR từ 2026-01-01; CLDR 47 chưa có, intl
-///   0.20.3 (CLDR 48) đã có.
-/// - `ZW` ra `USD`: phần lớn giao dịch hằng ngày ở Zimbabwe bằng USD; ZWG
-///   không neo với USD và đã mất giá mạnh từ 2024.
-///
-/// Vùng có nhiều tiền tệ: bỏ mã không phải ISO 4217 ba chữ cái và `XXX`; nếu
-/// đúng một mã bắt đầu bằng mã vùng (tiền do chính vùng đó phát hành, ví dụ
-/// `BT` ra `BTN`) thì lấy mã đó; không thì lấy mã có ngày bắt đầu lưu hành
-/// (`from`) sớm nhất, vì Babel trả ứng viên theo thứ tự `from` (nếu có từ hai
-/// mã bắt đầu bằng mã vùng thì cũng lấy mã có `from` sớm nhất trong số đó).
+```dart
+class PaywallScreen extends StatefulWidget {
+  const PaywallScreen({super.key});
+}
 ```
 
-- File bị quét bởi `test/static_rules_test.dart`. Không được có `DateTime.now()`, `Color(0x`, `Text('`.
+Trạng thái: gói đang chọn (kiểu `PlanPeriod`, ban đầu `kPremiumPlans.first.period`) và một cờ `bool` "đã bấm nút chính" (ban đầu `false`; chỉ có đường bật, không có đường tắt). Màn không gọi `ServicesScope` và không import gì từ `lib/data/`.
 
----
+Cây widget: `Scaffold` > `SafeArea` > `CustomScrollView` > `SliverFillRemaining(hasScrollBody: false)` > `Padding(EdgeInsets.fromLTRB(s5, s3, s5, s6))` > `Column(crossAxisAlignment: stretch)`, gồm lần lượt:
 
-## 3. Tester: `test/core/money_format_test.dart` (file duy nhất được sửa)
+1. Canh phải: `SteadyIconButton(variant: SteadyIconButtonVariant.plain, icon: SteadyIcons.x, semanticLabel: l10n.close, onPressed: () => Navigator.of(context).maybePop())`.
+2. Cách `s5`. `l10n.paywallOverline` kiểu `overline` màu `amber`; cách `s2`; `l10n.paywallTitle` kiểu `display` màu `ink`.
+3. Cách `s5`. Bốn hàng lợi ích theo thứ tự `paywallBenefitSounds`, `paywallBenefitStreaks`, `paywallBenefitPlans`, `paywallBenefitHistory`, cách nhau `s3`. Mỗi hàng: `SteadyIcon(SteadyIcons.check, size: 20, color: tide)`, `SizedBox(width: s3)`, `Expanded(Text)` kiểu `body` màu `ink`.
+4. `Spacer()`, rồi `SizedBox(height: s5)`.
+5. `Semantics(container: true, label: l10n.choosePlanLabel)` bọc một cột gồm một `PlanOption` cho mỗi phần tử của `kPremiumPlans`, đúng thứ tự của danh sách, cách nhau `s3`:
+   - `title`: `planMonthly` hoặc `planWeekly`.
+   - `price`: `MoneyFormat(formatLocaleOf(context), kPlanCurrency).format(plan.priceMinor)`.
+   - `period`: `planPerMonth` hoặc `planPerWeek`.
+   - `note`: `planTrialNote` (cả hai gói).
+   - `selected`: gói này là gói đang chọn. `onTap`: đặt gói đang chọn thành gói này.
+6. Cách `s5`. Nếu cờ đã bật: `SteadyInlineStatus(message: l10n.paywallUnavailable)` (tone mặc định) rồi cách `s3`.
+7. `SteadyButton(variant: SteadyButtonVariant.primary, block: true, label: l10n.paywallCta, onPressed: bật cờ)`. Nút chỉ bật cờ, không làm gì khác.
+8. Cách `s5`. Dòng điều khoản của gói đang chọn: `l10n.paywallTermsMonthly(price)` hoặc `l10n.paywallTermsWeekly(price)`, với `price` là chuỗi giá đã định dạng của gói đó; kiểu `caption` màu `inkMuted`, `textAlign: TextAlign.center`.
 
-1. Map `cases` của nhóm `the region of the phone wins over its language`:
-   - thêm `'bg_BG': 'EUR',` ngay sau `'en_GB': 'GBP',` (dòng 154), trong phần "Giữ nguyên như trước khi có bảng theo vùng".
-2. Nhóm `a region with several currencies gets its own`:
-   - dòng 200: `'en_ZW': 'USD',`;
-   - dòng 212: `expect(MoneyFormat.currencyForLocale('en-ZW'), 'USD');`;
-   - viết lại chú thích nhóm (dòng 189–192), giữ ý cũ và sửa cho đúng:
-     - LS, NA: mã tự phát hành không phải mã đầu tiên Babel trả về;
-     - PS: không mã nào bắt đầu bằng mã vùng, nên lấy mã có `from` sớm nhất (ILS, không phải JOD);
-     - ZW: bị ghi đè ra USD, xem chú thích của `kRegionCurrency`;
-   - chú thích dòng 210: đổi vế `en_ZW: tiền Zimbabwe` thành `en-ZW: ZW bị ghi đè ra USD, nhận cả "-"`.
-3. Test `has the entries the plan names` (dòng 330–343): thêm `expect(kRegionCurrency['BG'], 'EUR');` và `expect(kRegionCurrency['ZW'], 'USD');`.
+Chọn chuỗi theo `PlanPeriod` bằng `switch` đủ nhánh (mẫu: `_moodLabel` trong `lib/ui/components/mood_picker.dart`).
 
-   Lý do: xoá hẳn dòng BG hoặc ZW thì `bg_BG` và `en_ZW` vẫn ra EUR, USD nhờ intl. Chỉ hai dòng này bắt được lỗi đó.
-4. Nếu `thay-doi.md` ghi thêm ghi đè ngoài BG, ZW, thì với mỗi vùng `R` đó:
-   - thêm một ca `<ngôn ngữ của locale intl>_<R>` vào `cases`;
-   - thêm một dòng `expect(kRegionCurrency[R], …)` vào test ở bước 3.
-5. Không nới kỳ vọng nào khác. Không sửa `lib/`. Thấy lỗi trong `lib/` thì ghi vào `ket-qua-test.md`, không lách.
+### 3.5 Lối vào trên tab Focus
 
-**Đột biến phải bị bắt.** Làm trên bản sao ngoài repo, ví dụ `SP/mut/`, giống vòng trước. Sửa thẳng file Dart trên bản sao. Mỗi đột biến phải làm ít nhất một test rớt:
+`lib/features/placeholder/placeholder_screen.dart`:
 
-| Đột biến | Sửa trên bản sao | Test phải bắt |
-|---|---|---|
-| (f) bỏ ghi đè BG | `'BG': 'EUR'` thành `'BGN'` | `bg_BG gives EUR`, `has the entries…` |
-| (g) bỏ ghi đè ZW | `'ZW': 'USD'` thành `'ZWG'` | `en_ZW gives USD`, ca `en-ZW`, `has the entries…` |
-| (h) xoá hẳn dòng BG | xoá `'BG': …` | `has the entries…` |
-| (i) xoá hẳn dòng ZW | xoá `'ZW': …` | `has the entries…` |
+```dart
+const PlaceholderScreen({super.key, required this.title, this.action});
 
----
-
-## 4. Thứ tự và lệnh kiểm chứng
-
-Mọi lệnh chạy với `export PATH="/opt/flutter/bin:$PATH"` trong `/home/user/mekoke`.
-
-**Coder:**
-1. Chạy `flutter test` để xác nhận mốc **+1243, 0 rớt**.
-2. Làm §1, §2. Chạy script, rồi `dart format lib`, rồi `diff` như §1.5.
-3. Chạy `flutter analyze`, rồi `flutter test`. Kết quả mong đợi là **đúng 2 test rớt**: `en_ZW gives ZWG` và `a language that has its own region does not leak in`. Đây là kỳ vọng cũ mà Tester sẽ sửa.
-   - Coder không sửa test.
-   - Nếu có test khác rớt thì sửa script (§1), không sửa test.
-4. Ghi `.bangiao/thay-doi.md`, gồm:
-   - toàn văn phần in ra của script;
-   - kết quả `diff` ở §1.5;
-   - cách xử lý từng chỗ lệch với intl, theo (A), (B) hoặc (C) ở §1.3;
-   - danh sách `OVERRIDES` cuối cùng;
-   - tên 2 test rớt ở bước 3;
-   - mọi chỗ lệch so với kế hoạch, kèm lý do.
-
-**Tester:** làm §3, ghi `.bangiao/ket-qua-test.md`. Trong đó có bảng đột biến (f)–(i), và danh sách các ca phải giữ nguyên: `en_US`, `de_DE`, `ja_JP`, `vi_VN`, `en_GB`, `bg_BG`, `xx`, `xx_YY`.
-
-**Lệnh chạy sau Tester:**
-```
-export PATH="/opt/flutter/bin:$PATH"; cd /home/user/mekoke
-dart format --output=none --set-exit-if-changed lib test
-flutter analyze
-flutter test
-TZ=America/New_York flutter test
-git status --short
-graphify update .
+final String title;
+final Widget? action;
 ```
 
----
+Có `action` thì thêm `SizedBox(height: SteadySpace.s6)` và `action` ngay dưới dòng `placeholderBody`, trong cùng `Column` (giữ `crossAxisAlignment: start`). Không canh giữa, không dồn xuống đáy. Không đổi gì khác của màn này.
+
+`lib/features/shell/home_shell.dart`, trong `_HomeShellState`:
+
+```dart
+void _openPaywall() {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => const PaywallScreen()),
+  );
+}
+```
+
+Dòng 61 đổi thành:
+
+```dart
+PlaceholderScreen(
+  title: l10n.tabFocus,
+  action: SteadyButton(label: l10n.seePremium, onPressed: _openPaywall),
+),
+```
+
+Giữ `variant` mặc định của `SteadyButton` (`secondary`), cỡ mặc định, không `block`. Không sửa `PopScope`, `AnnotatedRegion` hay phần nào khác của file.
+
+### 3.6 Câu chữ (thêm vào cuối `lib/l10n/app_en.arb`)
+
+| Khoá | Nguyên văn |
+|---|---|
+| `seePremium` | See Premium |
+| `paywallOverline` | STEADY PREMIUM |
+| `paywallTitle` | Every sound, every plan, no ads |
+| `paywallBenefitSounds` | Every sound, offline |
+| `paywallBenefitStreaks` | Unlimited habit streaks |
+| `paywallBenefitPlans` | Custom fasting and interval plans |
+| `paywallBenefitHistory` | Full history and widget themes |
+| `choosePlanLabel` | Choose a plan |
+| `planMonthly` | Monthly |
+| `planWeekly` | Weekly |
+| `planPerMonth` | per month |
+| `planPerWeek` | per week |
+| `planTrialNote` | 3-day free trial |
+| `paywallCta` | Try 3 days free |
+| `paywallUnavailable` | Purchases aren't available yet. |
+| `paywallTermsMonthly` | Free for 3 days, then {price} per month. Cancel anytime in Google Play. |
+| `paywallTermsWeekly` | Free for 3 days, then {price} per week. Cancel anytime in Google Play. |
+
+`{price}` là placeholder kiểu `String`, khai bằng khoá `@paywallTermsMonthly` và `@paywallTermsWeekly` theo mẫu `@spentLastMonth` trong cùng file. Nút X dùng khoá `close` đã có.
+
+## 4. Trường hợp biên bắt buộc
+
+1. Cỡ chữ hệ thống 2.0 ở 360×800: tab Focus và paywall không ném lỗi tràn; paywall cuộn được tới nút chính và dòng điều khoản; giá hiện đủ trong thẻ. Tên gói được phép xuống dòng.
+2. Màn thấp (360×560): paywall cuộn được, không tràn.
+3. Luôn có đúng một gói được chọn. Bấm lại gói đang chọn không bỏ chọn. Đổi gói thì dòng điều khoản đổi theo giá và kỳ của gói đó.
+4. Nút chính chỉ làm hiện `paywallUnavailable`: không ghi DB, không ghi `prefs`, không đóng màn, không đổi trạng thái nào khác. Bấm nhiều lần vẫn chỉ có một dòng. Đổi gói sau đó thì dòng báo vẫn còn.
+5. Nút X và nút Back của Android đóng paywall, về tab Focus, app chưa thoát; Back lần nữa mới thoát.
+6. Paywall chỉ mở khi người dùng tự bấm "See Premium". Không tự bật lúc mở app, lúc đang nhịn ăn hay đang chạy bài tập.
+7. Giá chỉ đi qua `MoneyFormat`, không nối ký hiệu tiền bằng tay. Máy `en_US` ra đúng `$9.99` và `$4.99`. Máy không phải tiếng Anh (ví dụ `de_DE`) vẫn ra `$9.99` và `$4.99` như phần còn lại của app. Máy tiếng Anh vùng khác thì theo đúng kết quả của `MoneyFormat` cho vùng đó. Không locale nào làm crash.
+8. Đọc màn hình: mỗi thẻ gói là nút trong nhóm chọn một, có hành động chạm, đọc được tên, giá, kỳ, dòng dùng thử và trạng thái chọn; nhóm thẻ có nhãn "Choose a plan"; nút X có nhãn "Close"; dòng báo ở bước 6 được đọc khi hiện (`SteadyInlineStatus` đã là `liveRegion`).
+9. Thẻ gói cao tối thiểu `SteadySize.tap`.
+10. Không đặt `LayoutBuilder` ở bất kỳ đâu bên trong `SliverFillRemaining(hasScrollBody: false)`, kể cả trong `PlanOption`: sliver này đo chiều cao nội tại nên `LayoutBuilder` sẽ ném lỗi.
+11. Cả paywall có đúng một nút `primary`.
+12. Tab Focus sau khi thêm nút: vẫn còn dòng "This part of Steady isn't ready yet."; chữ "Focus" vẫn chỉ xuất hiện đúng hai lần; điểm (180, 500) ở 360×800 vẫn là màu nền (nút nằm ngay dưới dòng chữ, phía trên toạ độ này); Back ở tab Focus khi không mở paywall vẫn thoát app.
 
 ## 5. Quy ước và file mẫu
-- Script sinh bảng: bám cách viết hiện có trong `SP/gen_region_currency.py`. Dùng regex `re.fullmatch`, in bằng `print` tiếng Việt.
-- Chú thích Dart: tiếng Việt, `///`, ngắt dòng không quá 80 cột, như `lib/core/format/region_currency.dart` và `lib/core/format/money_format.dart`.
-- Test bảng ca theo map `cases` và `forEach`: chép mẫu `test/core/money_format_test.dart` dòng 147–187.
-- Bản sao để gây lỗi cố ý: làm như `SP/mut/` của vòng trước (xem mục 2 của `SP/ship-run6/ket-qua-test.md`).
 
----
+| Việc | Chép quy ước từ |
+|---|---|
+| Màn toàn trang có nút X, mở bằng `MaterialPageRoute<void>` | `lib/features/money/entry_editor_screen.dart`, `lib/features/money/money_screen.dart` (`_openEditor`) |
+| Thân cuộn có `Spacer`, nội dung dài thì cuộn | `lib/features/timer/interval_run_screen.dart` (`SliverFillRemaining(hasScrollBody: false)`) |
+| Định dạng tiền và lấy locale | `lib/features/money/money_screen.dart` (`MoneyFormat(formatLocaleOf(context), ...)`) |
+| Thẻ chọn một có viền 2 px đổi sang `amber` khi chọn (`Material` + `shape` + `InkWell`) | `lib/ui/components/mood_picker.dart` (`_MoodItem`) |
+| Semantics của ô chọn một | `lib/ui/components/icon_tile.dart` |
+| Màu từ `SteadyColors.of(context)`, chữ từ `SteadyText`, khoảng cách từ `SteadySpace` | `lib/ui/components/steady_chip.dart` |
+| Dòng báo tại chỗ nằm trên nút chính | `lib/features/money/entry_editor_screen.dart` (`_error`) |
+| Nhóm có nhãn (`Semantics(container: true, label: ...)`) | `lib/features/money/entry_editor_screen.dart` (`l10n.categoryLabel`) |
+| Dữ liệu thuần tách file riêng | `lib/features/streaks/habit_name.dart` |
+| Khoá ARB có tham số | `lib/l10n/app_en.arb` (`spentLastMonth`) |
+| Thứ tự import, chú thích tiếng Việt | `lib/features/shell/home_shell.dart`, `lib/ui/components/icon_tile.dart` |
 
-## 6. Tiêu chí xong
-- Trong `lib/core/format/region_currency.dart`:
-  - `'BG': 'EUR'`, `'ZW': 'USD'`, `'PA': 'PAB'`;
-  - 255 mục; so với bản trước chỉ khác chú thích và các dòng ghi đè (§1.5);
-  - chú thích đúng §2, không còn câu "Ngày lấy dữ liệu".
-- Script chạy không lỗi:
-  - "Lệch còn lại sau ghi đè" rỗng, hoặc mỗi mục đều được giải thích theo (B) hoặc (C) trong `thay-doi.md`;
-  - script vẫn nằm ngoài repo.
-- `bg_BG` ra EUR; `en_ZW`, `en-ZW` ra USD. Các ca giữ nguyên ở §4 không đổi.
-- `flutter analyze` báo "No issues found!". Lệnh format thoát với mã 0.
-- `flutter test` ra **+1244, 0 rớt** ở cả múi giờ mặc định và `TZ=America/New_York`. 1243 cộng 1 ca `bg_BG`, cộng thêm mỗi ca của bước 3.4 nếu có.
-- Bốn đột biến (f), (g), (h), (i) đều bị bắt.
-- `git status --short` chỉ có 3 file `lib/` và 3 file `test/` của vòng trước, cùng `.bangiao/`. Vòng này chỉ đổi `lib/core/format/region_currency.dart` và `test/core/money_format_test.dart`. `pubspec.*` không đổi.
+## 6. Test mới (việc của Tester)
+
+File:
+
+| File | Việc |
+|---|---|
+| `test/features/premium_plans_test.dart` (tạo) | Test dữ liệu gói. |
+| `test/ui/plan_option_test.dart` (tạo) | Test component. |
+| `test/widget/paywall_test.dart` (tạo) | Test màn và lối vào. |
+| `test/design/assets_and_copy_test.dart` (sửa) | Chỉ thêm một nhóm test câu chữ paywall; không sửa test đang có. |
+
+Phải phủ:
+
+- `kPremiumPlans`: đúng hai phần tử, thứ tự monthly rồi weekly, giá 999 và 499; `kPlanCurrency` là `'USD'`.
+- `PlanOption`: màu viền theo `selected`; ô radio (có và không có dấu tích); Semantics (mục 4, số 8); chạm bất kỳ đâu trên thẻ gọi `onTap`; cao tối thiểu 48; có và không có `note`; không tràn ở bề rộng 320, cỡ chữ 2.0, với đúng các chuỗi của paywall.
+- Paywall: mở từ nút "See Premium" trên tab Focus; hai giá và hai kỳ hiện đúng; Monthly chọn sẵn; đổi gói đổi dòng điều khoản; bấm lại gói đang chọn; bấm nút chính (một lần và nhiều lần) hiện đúng một dòng báo và màn không đóng; X và Back; mục 4 số 1, 2, 7, 11, 12.
+- Nguyên văn mọi khoá ở mục 3.6, và `SteadyIcons.check == 'check'`.
+
+Mẫu để chép:
+
+| Việc | File |
+|---|---|
+| Test component (`_host`, `_size`, Semantics, cỡ chữ 2.0) | `test/ui/money_components_test.dart` (nhóm `IconTile`) |
+| Dựng và gỡ app (`pumpSteadyApp`, `disposeSteadyApp`) | `test/helpers/test_app.dart` |
+| `tapTab`, `settle`, `captureSystemPop`, `pixelAt`, `FakeNow`, `evening` | `test/helpers/widget_helpers.dart` |
+| Back của Android, thoát app | `test/widget/shell_navigation_test.dart` |
+| Locale của máy | `test/widget/locale_test.dart` |
+| Tràn ở cỡ chữ 2.0 | `test/widget/layout_test.dart` |
+| Câu chữ tiếng Anh | `test/design/assets_and_copy_test.dart` |
+| Cuộn tới rồi mới chạm (`tapScrolled`) | `test/helpers/money_helpers.dart` |
+
+Lưu ý: `flutter test` dùng phông thử có mỗi ký tự rộng 1 em, nên theo ước tính paywall dài hơn 800 ngay ở cỡ chữ 1.0. Gọi `ensureVisible` trước khi chạm thẻ gói hoặc nút chính.
+
+## 7. Test hiện có dễ rớt
+
+| Test | Rớt khi |
+|---|---|
+| `test/static_rules_test.dart` | `lib/` có `Text('chữ cứng')` ngoài `lib/l10n/`; có `Color(0x` ngoài `lib/core/theme/tokens.dart`; có chuỗi `DateTime.now()` (kể cả trong chú thích). |
+| `test/design/assets_and_copy_test.dart` | Thêm file `.svg` vào `assets/icons/` (phải giữ đúng 67); khai hằng trong `SteadyIcons` mà không có file cùng tên; `pubspec.yaml` chứa `riverpod`, `provider:`, `get_it`, `google_fonts`. |
+| `test/widget/shell_navigation_test.dart` | Vi phạm mục 4, số 12. |
+| `test/widget/layout_test.dart` | Tab Focus tràn ở cỡ chữ 2.0. |
+| `test/design/token_sync_test.dart` | Sửa `lib/core/theme/tokens.dart`, `lib/core/theme/typography.dart` hoặc `design/steady-ds/`. Vòng này không sửa các file đó. |
+
+Coder và Tester không tự nới các phép kiểm trên.

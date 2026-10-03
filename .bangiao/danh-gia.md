@@ -1,110 +1,95 @@
 PHAN QUYET: CHOT
 
-# Đánh giá: vòng "sửa tiếp", tiền tệ theo vùng (BG ra EUR, ZW ra USD)
+# Đánh giá: vòng "1A 2A 3A 4A", màn paywall xem thử (Monthly $9.99, Weekly $4.99)
 
-> Ghi chú của điều phối viên: Reviewer không có công cụ Write nên đã gửi nguyên văn nội dung dưới đây. Điều phối viên lưu lại, không sửa chữ nào. Sau khi Tester xong, điều phối viên đã chạy lại độc lập:
-> - `flutter analyze`: "No issues found!".
-> - `flutter test`: +1244 "All tests passed!".
-> - `TZ=America/New_York flutter test`: +1244 "All tests passed!".
+> Ghi chú của điều phối viên: Reviewer không có công cụ Write nên đã gửi nguyên văn nội dung dưới đây. Điều phối viên lưu lại, không sửa chữ nào. Điều phối viên không chạy lại `flutter test`; con số 1364/1364 là của Tester (Coder cũng báo 1244/1244 trước khi có test mới). Điều phối viên đã tự bấm thử trên bản xem trước web ở 360x800: nút "See Premium" mở paywall, hai giá hiện đúng, đổi sang Weekly thì dòng điều khoản đổi theo, bấm "Try 3 days free" hiện "Purchases aren't available yet." và màn không đóng, nút X đóng paywall.
 
-Reviewer, chặng 4 của /ship. Nhánh `claude/vigilant-archimedes-0yt6az`, mốc `267a46a`. Viết tắt `SP` = `/tmp/claude-0/-home-user-mekoke/cc7bfc32-2202-5695-aafd-72552f98ca86/scratchpad`.
+Reviewer, chặng 4 của /ship. Nhánh `claude/vigilant-archimedes-0yt6az`, mốc `4b2a0d5`. Vòng này chưa có commit nào.
 
-Tôi chỉ đọc. Cụ thể:
-- Chạy `git status`, `git diff --stat 267a46a`.
-- Diff `SP/region_currency.before.dart` với `lib/core/format/region_currency.dart`.
-- Diff `SP/mut/base/` (bản chốt vòng trước) với 5 file `lib/` và `test/` hiện tại, để tách riêng phần của vòng này.
-- Đọc `SP/gen_region_currency.py`.
-- Tra Babel 2.18.0 bằng `python -B` (không ghi file). Đối chiếu bảng với intl bằng một cách khác với script: `babel.Locale.parse` thay cho `split('_')` kết hợp `language_aliases`.
-- Chạy logic của script trong bộ nhớ, cắt trước bước ghi file, `OUT` trỏ vào `/dev/null`, để thử ghi đè thừa.
-- Không chạy `flutter test`, vì lệnh này ghi vào `.dart_tool/`. Số +1244 lấy từ dòng cuối của `SP/ship-run7/tester_default.log`, `tester_ny.log` và 5 log trong `SP/ship-run7/mutlogs/`.
+## Tôi đã làm gì
 
-## Tóm tắt
-- Hai việc "Cần sửa" của vòng trước đã xong, đúng cách đã đề xuất: `BG` ra `EUR` và `ZW` ra `USD` bằng `OVERRIDES` trong script, rồi sinh lại bảng. `PA` vẫn `PAB`.
-- So với bản cũ, bảng chỉ khác khối `///` và đúng 2 dòng: dòng 53 `'BG': 'EUR',` và dòng 286 `'ZW': 'USD',`. Bảng vẫn 255 mục.
-- Vòng này chỉ đổi `lib/core/format/region_currency.dart` và 6 chỗ trong `test/core/money_format_test.dart`. Các file sau giống hệt bản chốt vòng trước: `money_format.dart`, `transaction_row.dart`, `money_components_test.dart`, `money_screen_test.dart`. `pubspec.*` không đổi.
-- Không có hồi quy. Có vài điểm nên làm để script bền hơn cho lần sau, nhưng không chặn.
+- Đọc `.bangiao/ke-hoach.md`, `thay-doi.md`, `ket-qua-test.md`.
+- Chạy `git status`, `git diff`, `git log`; đọc trực tiếp các file chưa theo dõi của vòng này.
+- Đối chiếu với `design/mockups/steady/Paywall.dc.html` và `design/steady-ds/components/PlanOption/README.md`.
+- Tự chạy hai lệnh kiểm không ghi file: `dart format --output=none --set-exit-if-changed lib test` (124 file, 0 thay đổi, exit 0) và `dart analyze` ("No issues found!", exit 0). `git status` trước và sau giống nhau.
+- Không chạy `flutter test`, vì lệnh này ghi vào `.dart_tool/` và `build/`. Con số 1364/1364 là của Tester, tôi chưa tự kiểm. Tôi đếm tay số test trong các file mới: 8 + 31 + 67 + 8 + 6 = 120, khớp 1244 + 120 = 1364.
+- Chỉ xét phần của vòng paywall. Phần "bản xem trước trên web" ghi riêng ở cuối.
 
-## Ba câu hỏi
+## Kết luận ngắn
 
-### Code có khớp kế hoạch không?
+Mã khớp kế hoạch. Tôi không tìm thấy lỗi về đúng sai, bảo mật hay hiệu năng. Test có giá trị thật. Không có việc nào bắt buộc sửa trước khi chốt vòng này. Có một điểm về câu chữ sẽ thành điểm chặn ngay khi nối mua thật hoặc phát hành cho người dùng thật (mục "Ghi nhận", số 1).
+
+## 1. Code có khớp kế hoạch không?
+
 Có.
-- **§1.1:** `OVERRIDES` đúng nguyên văn. Phần ghi đè được áp sau vòng chọn và có đủ 4 assert ở script dòng 115–120. `before = dict(table)` được lưu trước khi áp.
-- **§1.2:** script dòng 123–133 kiểm hai điều: thứ tự mã khi gọi kèm `include_details=True` trùng với `cands`, và `from` không giảm (`None` coi là `date.min`). Logic chọn không đổi.
-- **§1.3:** `read_intl_currencies` và `intl_region` đúng đặc tả.
-  - Regex `new NumberSymbols\(` không khớp `new CompactNumberSymbols(` ở dòng 2295 trở đi của file intl, nên không đếm trùng 119 locale.
-  - Toàn file có đúng 119 dòng `DEF_CURRENCY_CODE`.
-- **§1.5:** mọi assert đều nằm trước `open(OUT, 'w')` ở dòng 204.
-- **§2:** chú thích khớp mẫu. Dòng dài nhất 79 ký tự (đếm theo ký tự Unicode). Đã bỏ câu "Ngày lấy dữ liệu".
 
-### Test có giá trị thật hay chỉ viết cho có?
+- `lib/features/premium/premium_plans.dart`: đúng mục 3.2. Thuần Dart, monthly 999 rồi weekly 499, `kPlanCurrency = 'USD'`, chú thích đầu file nói đây là giá tạm.
+- `lib/ui/components/plan_option.dart`: đúng mục 3.3. `Material` + `RoundedRectangleBorder` (bo `SteadyRadius.lg`, viền 2 px) + `InkWell` có `customBorder`; đệm `s4`; cao tối thiểu `SteadySize.tap`; ô radio 24x24; cột giá không co giãn, mỗi dòng `maxLines: 1`; Semantics theo `icon_tile.dart`; không `LayoutBuilder`; không tham số `badge`.
+- `lib/features/premium/paywall_screen.dart`: đúng mục 3.4, đủ tám phần theo thứ tự. State chỉ có gói đang chọn và một cờ chỉ có đường bật. Giá chỉ đi qua `MoneyFormat(formatLocaleOf(context), kPlanCurrency)` (dòng 49). Không `ServicesScope`, không import `lib/data/`.
+- `lib/features/placeholder/placeholder_screen.dart:33-36` và `lib/features/shell/home_shell.dart:41-44, 68-74`: đúng mục 3.5. `PopScope` và `AnnotatedRegion` không đổi.
+- `lib/l10n/app_en.arb:392-422`: đủ 17 khoá, nguyên văn mục 3.6 và nguyên văn mockup. Hai file sinh ra chỉ thêm, không sửa chỗ cũ.
+- `lib/ui/components/steady_icon.dart:40`: thêm `check`; không thêm svg.
+- Không file ngoài phạm vi nào bị vòng này đụng; `pubspec.yaml` không đổi.
+
+Khác kế hoạch (đều đã khai, chấp nhận được):
+
+- `home_shell.dart:42-43`: dáng xuống dòng do `dart format` quyết định, nội dung đúng. Tôi đã tự chạy `dart format`, sạch.
+- `plan_option.dart:117`: dùng `?note` thay `if (note != null) note` vì lint của repo.
+- Tester thêm `test/widget/paywall_fit_test.dart`, ngoài danh sách mục 6. Đây là phần thêm có ích (đo bằng phông thật), không thay test nào.
+
+## 2. Test có giá trị thật hay viết cho có?
+
 Có giá trị thật.
-- Log đột biến khớp bảng của Tester: (f) `+71 -2`, (g) `+70 -3`, (h) `+72 -1`, (i) `+72 -1`.
-- Với (h) và (i), test duy nhất rớt là `has the entries the plan names`. Điều này xác nhận hai dòng `expect(kRegionCurrency['BG'] / ['ZW'])` ở `test/core/money_format_test.dart` dòng 350–351 là chốt chặn duy nhất cho lỗi xoá hẳn dòng, không phải dòng thừa.
-- `bg_BG` được xếp vào nhóm "Giữ nguyên như trước khi có bảng theo vùng". Xếp vậy là đúng, vì trước khi có bảng, `bg_BG` đi qua intl `bg` và ra EUR.
-- Chú thích nhóm ở dòng 191–196 khớp số liệu Babel tôi tự tra: ZAR 1961-02-14, LSL 1980-01-22, NAD 1993-01-01, ILS 1985-09-04, JOD 1996-02-12, USD 2009-04-12, ZWG 2024-06-25.
 
-### Bảo mật, hiệu năng, tính đúng đắn
-- **Bảo mật, hiệu năng:** không thay đổi gì. Vòng này chỉ đổi 2 giá trị trong một map `const`.
-- **Đúng đắn:** USD và EUR đều có 2 chữ số thập phân, giống ZWG và BGN, nên số tiền đã lưu theo đơn vị nhỏ nhất không bị lệch.
+- `test/widget/paywall_test.dart` chạy qua cả app (`pumpSteadyApp`), không chỉ dựng riêng widget.
+- Có đường phủ định: bấm nút chính thì chụp cả năm bảng của DB trước và sau (đủ năm bảng khai ở `lib/data/database.dart:94`), màn không đóng, `SystemNavigator.pop` không bị gọi.
+- Sau mỗi lần chạm luôn kiểm đúng một gói được chọn và đúng một dòng điều khoản.
+- Test `en_ZA` bắt được việc nối ký hiệu tiền bằng tay hoặc bỏ vùng của máy: kết quả đúng là `$9,99`, không phải `$9.99`.
+- `test/widget/paywall_fit_test.dart` có test đối chứng "phông thật đã nạp" rồi mới đo bố cục, nên không xanh giả khi phông không nạp được.
+- `test/design/assets_and_copy_test.dart` chỉ thêm một nhóm ở cuối (106 dòng thêm, 0 dòng xoá).
 
-## Các điểm điều phối viên hỏi
+Chỗ yếu, không chặn:
 
-1. **BG ra EUR, ZW ra USD có đúng không?** Đúng.
-   - Babel 2.18.0 (CLDR 47) cho BG chỉ có BGN, `from` 1999-07-05, không có `to`. Intl 0.20.3 thì khác:
-     - `number_symbols_data.dart` dòng 10 ghi "CLDR ver. 48";
-     - dòng 194 cho `bg` là `EUR`;
-     - `pubspec.lock` dòng 335 ghi `version: "0.20.3"`.
-   - Bulgaria dùng EUR từ 2026-01-01.
-   - ZW ra USD là lựa chọn sản phẩm, đã nêu lý do ở vòng trước. Intl không có locale nào thuộc vùng ZW, nên không có nguồn ngoài nào mâu thuẫn.
+- `test/ui/plan_option_test.dart:440-473`, trường hợp rộng 320 cỡ chữ 2.0 với Ahem: cột tên gói chỉ còn khoảng 24 px trong khi mỗi ký tự rộng 36 px. `Text` không ném lỗi khi chữ tràn, nên test xanh không chứng minh được tên gói đọc được. Trường hợp này chỉ có nghĩa với phông thật, và `paywall_fit_test.dart` có phủ 320x640.
+- `test/widget/paywall_test.dart:354-364` ("no badge"): chỉ dò bốn chuỗi cứng. `PlanOption` không có tham số `badge` nên test này gần như không thể rớt.
+- `test/widget/paywall_test.dart:1020-1039`: 14 locale chỉ kiểm giá thuộc một trong hai giá (`anyOf`). Giá trị chính là "không crash".
 
-2. **Chú thích đầu file có chính xác không?** Có.
-   - CLDR 47 là của Babel, CLDR 48 là của intl 0.20.3. Cả hai số đều đúng.
-   - Danh sách ghi đè khớp `OVERRIDES`.
-   - 2026-10-02 được ghi rõ là ngày truy vấn.
-   - Câu "Babel trả ứng viên theo thứ tự `from`" đúng: script assert điều này cho cả 7 vùng nhiều ứng viên, và lần chạy không hỏng assert.
-   - Câu "nếu có từ hai mã bắt đầu bằng mã vùng thì cũng lấy mã có `from` sớm nhất" đúng với `own[0]`, vì `own` giữ thứ tự của `cands`.
+## 3. Bảo mật, hiệu năng, tính đúng đắn
 
-3. **Bước đối chiếu với intl có đúng và đủ không?**
-   - **Đúng:** cách đối chiếu độc lập của tôi cho cùng kết quả: trước ghi đè chỉ lệch `bg (BG): BGN và EUR`, sau ghi đè 0 lệch. `es_419` bị bỏ vì là vùng số. Các locale `in`, `iw`, `tl`, `no`, `no_NO`, `sr_Latn` đều ra đúng vùng.
-   - **Khi đổi Babel thì bắt được:**
-     - script dừng ngay ở dòng 14 (`assert babel.__version__ == '2.18.0'`);
-     - sau khi nâng assert, nếu CLDR mới đã có BG là EUR thì dòng 119 dừng với "ghi đè thừa: BG".
-   - **Khi đổi intl thì chưa bắt được.** Xem mục "Nên làm sau", điểm 1 và 2.
+- Bảo mật: không có gì để tấn công. Không mạng, không lưu trữ, không khoá bí mật, không gói thanh toán.
+- Hiệu năng: không có gì đáng kể. `MoneyFormat` có bộ nhớ đệm theo cặp locale và tiền tệ.
+- Đúng sai: không tìm thấy lỗi. `SliverFillRemaining(hasScrollBody: false)` dùng đúng mẫu của `lib/features/timer/interval_run_screen.dart:213` và không có `LayoutBuilder` bên trong. Paywall là route riêng nên Back đóng paywall trước; `PopScope` của `HomeShell` thuộc route bên dưới.
 
-4. **Ghi đè thừa thì script có dừng không?** Có, và dừng trước khi ghi file. Tôi đã thử trong bộ nhớ:
-   - thêm `'US': ('USD', …)` thì ra "ghi đè thừa: US";
-   - thêm `'PA': ('PAB', …)` thì ra "ghi đè thừa: PA";
-   - thêm `'XQ': ('EUR', …)` thì ra "ghi đè cho vùng không có trong bảng: XQ".
+## Ghi nhận (không chặn vòng này)
 
-5. **Test mới có giá trị thật không?** Có, xem phần "Ba câu hỏi" ở trên.
+1. Câu chữ paywall không đúng với app hiện tại. Đây là quyết định của chủ dự án, đã được báo trước; tôi nêu lại bằng mắt độc lập.
+   - `lib/l10n/app_en.arb:394-398` quảng cáo âm thanh, widget và "no ads". Trong `lib/` không có âm thanh, không có widget, không có quảng cáo, không có trạng thái Premium và chưa khoá tính năng nào.
+   - "Unlimited habit streaks" và "Custom fasting and interval plans" ngụ ý bản miễn phí bị giới hạn, trong khi hiện không có giới hạn nào.
+   - Tab Focus ghi "This part of Steady isn't ready yet." ngay trên nút dẫn tới màn quảng cáo "Every sound".
+   - Vì sao tôi không chặn: không ai mua được gì (nút chính chỉ hiện "Purchases aren't available yet."), bản build chỉ là APK thử ký bằng khoá debug, và kế hoạch yêu cầu chép nguyên văn mockup.
+   - Điều kiện: điểm này phải thành điểm CHẶN ngay khi nối mua thật hoặc đưa bản build cho người dùng thật. Lúc đó hoặc sửa câu chữ cho đúng với tính năng đang có, hoặc làm xong tính năng.
+   - Nút "See Premium" có trong cả bản release (không có cờ chặn), và `test/design/assets_and_copy_test.dart` cùng `test/widget/paywall_test.dart` đang khoá nguyên văn các câu này. Nên ghi một dòng nhắc vào kế hoạch của vòng nối mua.
 
-6. **Có hồi quy nào khác không?** Không.
-   - Diff bảng cũ và mới chỉ có 2 dòng giá trị.
-   - Các ca phải giữ nguyên đều vẫn qua: `en_US`, `de_DE`, `ja_JP`, `vi_VN`, `en_GB`, `bg_BG`, `xx`, `xx_YY`, `en_PA`.
-   - +1244, 0 rớt ở cả hai múi giờ (theo log).
+2. Giá và điều khoản khi nối cửa hàng.
+   - `paywall_screen.dart:49, 125, 152`: máy `en_AU` và `en_CA` hiện `$9.99`, dễ đọc thành đô la địa phương. Kế hoạch mục 4 số 7 đã chấp nhận.
+   - `design/steady-ds/components/PlanOption/README.md` yêu cầu giá là chuỗi do Google Play Billing trả về. Khi nối cửa hàng phải bỏ `MoneyFormat` ở đây.
+   - "3-day free trial", "Try 3 days free" và dòng "Free for 3 days, then..." phải theo điều kiện dùng thử của từng người do cửa hàng trả về.
+   - "Restore purchase", Terms và Privacy (mockup dòng 41) phải có khi mua được.
 
-## Nên làm sau (không chặn, ngoài phạm vi vòng này)
+3. `.bangiao/ket-qua-test.md:59` không khớp test đã lưu. Tester ghi đã kiểm phông thật ở 360x560, 360x640 và 320x480. `test/widget/paywall_fit_test.dart:49-57` chỉ có 360x800, 360x560 và 320x640. Hai kích thước 360x640 và 320x480 không có bằng chứng lưu lại. Nên thêm hai kích thước đó vào vòng lặp, hoặc sửa câu trong báo cáo.
 
-1. **`SP/gen_region_currency.py` dòng 18–20:** `INTL_SYMBOLS` ghim cứng `intl-0.20.3`, và script không đọc `pubspec.lock`.
-   - Trong khi đó `pubspec.yaml` dòng 19 để `intl: any`, còn `flutter_localizations` ghi `intl: ^0.20.3`. Nên chỉ cần `flutter pub upgrade` hoặc nâng Flutter là intl có thể đổi phiên bản mà không ai chạy lại script.
-   - Kể cả khi có người chạy lại, script vẫn đọc bản 0.20.3 trong cache, và chú thích dòng 10 vẫn ghi "intl 0.20.3 của app dùng", tức là sai.
-   - **Cách sửa:** đọc `version:` của khối `intl:` trong `/home/user/mekoke/pubspec.lock`, rồi dựng đường dẫn từ đó, hoặc assert nó khớp với `intl_version`.
+4. Tên gói ở cỡ chữ 2.0 (ước tính của tôi, chưa chạy thử). `plan_option.dart:91-106` để cột giá rộng theo nội dung, nên trên máy rộng 360 cột tên gói còn khoảng 125 px, trong khi "Monthly" cỡ 36 px rộng khoảng 135 px. Tên gói có thể bị bẻ giữa từ ("Monthl" rồi "y"). Kế hoạch cho phép tên gói xuống dòng, và không test nào ghim cách xuống dòng. Nên nhìn tận mắt trên máy thật ở cỡ chữ 200%.
 
-2. **Script dòng 150–155:** lệch sau ghi đè chỉ được in ra (đúng §1.3 của kế hoạch), nên phải có người đọc output mới thấy.
-   - **Cách sửa:** thêm `EXPLAINED_MISMATCHES: dict[str, str]` (locale → lý do (B) hoặc (C)), rồi đặt hai assert trước bước ghi file:
-     - mọi locale trong `mismatch_after` phải nằm trong danh sách này;
-     - mọi khoá trong danh sách phải vẫn còn lệch, để danh sách không bị thừa.
+5. Nút X nằm đầu thân cuộn (`paywall_screen.dart:73-81`), đúng kế hoạch. Khi đã cuộn xuống thì phải cuộn lên mới thấy X; Back của Android vẫn đóng được.
 
-3. **Script dòng 180:** câu "CLDR {cldr} cũ hơn CLDR {intl_cldr}" được in vô điều kiện.
-   - **Cách sửa:** thêm `assert int(cldr) < int(intl_cldr)`, hoặc đổi câu theo điều kiện. Ngoài ra, lý do của BG ở dòng 24–25 ghi cứng "intl 0.20.3 (CLDR 48)" (Coder đã nêu).
+6. Lỗi tràn 36 px ở tab Focus tại 360x560 cỡ chữ 2.0 chỉ xảy ra với phông Ahem. `placeholder_screen.dart:24-38` là `Column` không cuộn, có từ trước vòng này. Với phông thật thì vừa (`paywall_fit_test.dart` phủ 360x560 cỡ chữ 2.0).
 
-4. **Các chỗ vặt trong script:**
-   - Dòng 169: biến `cldr_text` không còn được dùng, nên xoá. Nếu `cldr` là `None` thì chú thích sẽ in "CLDR None".
-   - Dòng 178–179: ngày `date(2026, 10, 2)` và chuỗi `2026-10-02` đang là chữ cố định, nên lấy từ `DATE`.
-   - Các kiểm tra đều dùng `assert`, nên chạy `python -O` thì mất hết. Nên đổi sang `raise SystemExit(...)`.
+7. CI trên Linux chưa chạy với các thay đổi này. Mọi kết quả là từ máy Windows.
 
-5. **Script nằm ngoài repo:** trong khi đó `region_currency.dart` lại ghi "File do script sinh, không sửa tay". Đây là quyết định của các vòng trước, nên để người dùng hoặc Planner quyết, ví dụ đưa vào `tool/gen_region_currency.py`.
+## Phần ngoài phạm vi: bản xem trước trên web
 
-6. **Tuỳ chọn:** thêm test Dart so `kRegionCurrency` với `numberFormatSymbols` của intl cho các locale có vùng rõ, như `en_GB`, `de_CH`, `pt_BR`.
-   - Test này sẽ bắt được lệch khi nâng intl mà không cần script.
-   - Nó không bắt được `bg`, vì intl chỉ có `bg` không kèm vùng. Vì vậy test này không thay được dòng 350–351.
+Không tính vào phán quyết. Không xung đột với vòng paywall: hai nhóm file không trùng nhau.
+
+- Nhóm của việc kia: `lib/data/database.dart`, `lib/main.dart`, `test/static_rules_test.dart`, `README.md`, `.gitignore`, `.metadata`, `analysis_options.yaml`, `web/`, `tool/`.
+- Nên commit tách riêng hai việc.
+- Con số 1244 và 1364 đều đo trên cây đã có bản sửa `test/static_rules_test.dart` của việc kia (đổi `\` thành `/` trong đường dẫn). Theo cách tôi đọc diff, thiếu bản sửa đó thì test này rớt khi chạy trên Windows; CI Linux không bị ảnh hưởng.
